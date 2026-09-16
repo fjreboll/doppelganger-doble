@@ -32,6 +32,7 @@ bash pipeline/run_all.sh
 - Registro Social de Hogares: hogares inscritos por tramo de CSE, 2023 · SINIM/Subdere, variables 4624–4630 (vía espejo `bastianolea/sinim_info_municipal`). Se contrasta con el registro simulado en la sección 04
 - Censo 2024, tabulado V5 (casas y departamentos por comuna) · INE
 - Límites comunales de la Región Metropolitana · BCN (vía espejo `caracena/chile-geojson@92332f8`), rasterizados con `pipeline/src/08_banner_pixel.py` (y `10_banner_sitia.py` para el sitio C)
+- Red vial OpenStreetMap (© colaboradores OSM, ODbL) para el banner del sitio C: `pipeline/src/11_calles_osm.js` (Overpass, 2026-09-16) y `12_integrar_calles.py`
 - Tipografías pixel: Pixelify Sans y VT323 (SIL Open Font License), auto-alojadas
 
 ## Límites declarados
