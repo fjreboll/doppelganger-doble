@@ -8,10 +8,10 @@
   const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const COMUNAS = ['La Pintana', 'Puente Alto', 'Santiago', 'Las Condes'];
   const TIPO = {
-    falso_positivo: { label: 'Prioriza sin elegibilidad situada (falso positivo)', short: 'Falso positivo', v: '--viz-2' },
-    falso_negativo: { label: 'Elegible no priorizado (falso negativo)', short: 'Falso negativo', v: '--viz-1' },
+    falso_positivo: { label: 'Priorizado sin serlo', short: 'Falso positivo', v: '--viz-2' },
+    falso_negativo: { label: 'Excluido siendo elegible', short: 'Falso negativo', v: '--viz-1' },
     base_desactualizada: { label: 'Base desactualizada', short: 'Desactualizada', v: '--viz-3' },
-    coincide: { label: 'Registro y vida coinciden', short: 'Coincide', v: '--viz-neutral' }
+    coincide: { label: 'Coinciden', short: 'Coincide', v: '--viz-neutral' }
   };
   const LOCUS = { ingreso_no_registrable: 'Ingreso no registrable', movilidad_residencial: 'Movilidad residencial', posicion_relativa_en_ranking: 'Posición relativa en el ranking', rezago_ingreso_formal: 'Rezago del ingreso formal', composicion_hogar: 'Composición del hogar' };
   let comuna = 'Todas', tipoCaso = 'todas', verCasos = 6;
@@ -33,10 +33,10 @@
   /* ── stats ── */
   const T = D.totales, minConf = Math.min(...D.confianza.slice(6, 12));
   const stats = [
-    ['home_work', nf.format(T.hogares), 'hogares sintéticos', 'uno por hogar censado en 2024'],
-    ['rule', nf.format(T.decisiones), 'decisiones con costura', 'confianza · antigüedad · umbral · procedencia'],
-    ['difference', nf.format(T.divergencias), 'entradas en el registro', pct(T.divergencias / T.hogares) + ' de los hogares evaluados', 'err'],
-    ['do_not_disturb_on', pct(minConf, 0), 'confianza junto al umbral', 'vigintil 40–45 del registro', 'err']];
+    ['home_work', nf.format(T.hogares), 'hogares sintéticos', 'uno por hogar censado'],
+    ['rule', nf.format(T.decisiones), 'decisiones con costura', 'todas trazables'],
+    ['difference', nf.format(T.divergencias), 'entradas en el registro', pct(T.divergencias / T.hogares) + ' de los hogares', 'err'],
+    ['do_not_disturb_on', pct(minConf, 0), 'acierto junto al umbral', 'percentil 40–45', 'err']];
   $('#stats').innerHTML = stats.map(([ic, v, l, s, c]) => `<div class="card elevated stat ${c || ''}"><div class="ic"><span class="material-symbols-outlined">${ic}</span></div><div class="label-l muted">${l}</div><div class="v">${v}</div><div class="body-s muted">${s}</div></div>`).join('');
   $('#gen').textContent = 'Datos generados el ' + D.generado + ' · base común doppelganger.db';
 
@@ -58,14 +58,14 @@
     svg.append('g').selectAll('path').data(D.confianza).join('path').attr('class', 'mark-hover')
       .attr('d', (c, i) => barPath(x(i) + (x.bandwidth() - bw) / 2, y(c), bw, y(0) - y(c))).attr('fill', css('--viz-seq'))
       .attr('opacity', (c, i) => (i === 8 || i === 9) ? 1 : .55)
-      .on('pointermove', (e, c) => { const i = D.confianza.indexOf(c); showTT(e, `<div class="tt-sub">Vigintil p${i * 5}–p${i * 5 + 5} del registro</div><div class="tt-val">${pct(c)}</div><div>de coincidencia con la clasificación situada</div>`); d3.select(e.currentTarget).attr('opacity', 1); })
+      .on('pointermove', (e, c) => { const i = D.confianza.indexOf(c); showTT(e, `<div class="tt-sub">Vigintil p${i * 5}–p${i * 5 + 5} del registro</div><div class="tt-val">${pct(c)}</div><div>de acierto</div>`); d3.select(e.currentTarget).attr('opacity', 1); })
       .on('pointerleave', (e) => { hideTT(); const i = D.confianza.indexOf(d3.select(e.currentTarget).datum()); d3.select(e.currentTarget).attr('opacity', (i === 8 || i === 9) ? 1 : .55); });
     const ux = x(8) - x.step() * .06;
     svg.append('line').attr('x1', ux).attr('x2', ux).attr('y1', m.t - 8).attr('y2', H - m.b).attr('stroke', css('--md-on-surface')).attr('stroke-width', 1);
     svg.append('text').attr('x', ux + 6).attr('y', m.t - 10).attr('font-size', 12).attr('fill', css('--md-on-surface')).attr('font-weight', 500).text('umbral p40');
     const i9 = 8; svg.append('text').attr('x', x(i9) + x.bandwidth() / 2).attr('y', y(D.confianza[i9]) - 6).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', css('--md-on-surface')).text(pct(D.confianza[i9], 0));
     table('t-conf', ['Vigintil del registro', 'Confianza'], D.confianza.map((c, i) => [`p${i * 5}–p${i * 5 + 5}`, pct(c)]));
-    $('#ins-conf').textContent = `En los vigintiles contiguos al umbral (p40–p50) la clasificación registrada coincide con la situada solo en ${pct(D.confianza[8], 0)} y ${pct(D.confianza[9], 0)} de los casos: la decisión es casi un volado, y ninguna interfaz operativa lo muestra.`;
+    $('#ins-conf').textContent = `Entre p40 y p50 el registro acierta ${pct(D.confianza[8], 0)}–${pct(D.confianza[9], 0)} de las veces. Casi un volado, y ninguna interfaz lo dice.`;
   }
 
   /* ── 02 waffle ── */
@@ -92,7 +92,7 @@
         .on('pointermove', (e, k) => { showTT(e, `<div class="tt-sub">${c}</div><div class="tt-val">${pct(raw[k])}</div><div><span class="key" style="background:${css(TIPO[k].v)}"></span>${TIPO[k].label}</div><div class="body-s">≈ ${nf.format(Math.round(raw[k] * r.hogares))} hogares</div>`); d3.select(e.currentTarget).attr('opacity', .75); })
         .on('pointerleave', e => { hideTT(); d3.select(e.currentTarget).attr('opacity', 1); });
       const big = Object.entries(n).filter(([k]) => k !== 'coincide').sort((a, b) => b[1] - a[1])[0];
-      div.insertAdjacentHTML('beforeend', `<p class="body-m" style="margin-top:8px"><b>${n.coincide}</b> coinciden · <b>${100 - n.coincide}</b> divergen, sobre todo por ${TIPO[big[0]].short.toLowerCase()} (${big[1]})</p>`);
+      div.insertAdjacentHTML('beforeend', `<p class="body-m" style="margin-top:8px"><b>${n.coincide}</b> coinciden · <b>${100 - n.coincide}</b> divergen</p>`);
       rows.push([c, pct(raw.coincide), pct(raw.falso_positivo), pct(raw.falso_negativo), pct(raw.base_desactualizada), nf.format(r.hogares)]);
     });
     table('t-waffle', ['Comuna', 'Coincide', 'Falso positivo', 'Falso negativo', 'Desactualizada', 'Hogares'], rows);
@@ -123,7 +123,7 @@
       svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
         .on('pointermove', e => { const [px] = d3.pointer(e); const mes = Math.max(0, Math.min(24, Math.round(x.invert(px)))), d = s[mes];
           hair.attr('x1', x(mes)).attr('x2', x(mes)).attr('opacity', 1); dot.attr('cx', x(mes)).attr('cy', y(d.divergencia)).attr('opacity', 1);
-          showTT(e, `<div class="tt-sub">${c} · mes ${mes}</div><div class="tt-val">${pct(d.divergencia)}</div><div>hogares con divergencia</div><hr class="divider" style="margin:8px 0"><div class="row"><span>Prioriza sin elegibilidad</span><b>${pct(d.falso_positivo)}</b></div><div class="row"><span>Elegible no priorizado</span><b>${pct(d.falso_negativo)}</b></div><div class="row"><span>Se mudó (no registrado o sí)</span><b>${pct(d.mudados)}</b></div><div class="row"><span>Composición desactualizada</span><b>${pct(d.composicion_desactualizada)}</b></div>`); })
+          showTT(e, `<div class="tt-sub">${c} · mes ${mes}</div><div class="tt-val">${pct(d.divergencia)}</div><div>divergen</div><hr class="divider" style="margin:8px 0"><div class="row"><span>Priorizado sin serlo</span><b>${pct(d.falso_positivo)}</b></div><div class="row"><span>Excluido siendo elegible</span><b>${pct(d.falso_negativo)}</b></div><div class="row"><span>Se mudó</span><b>${pct(d.mudados)}</b></div><div class="row"><span>Hogar cambió</span><b>${pct(d.composicion_desactualizada)}</b></div>`); })
         .on('pointerleave', () => { hideTT(); hair.attr('opacity', 0); dot.attr('opacity', 0); });
       s.filter(d => d.mes % 6 === 0).forEach(d => rows.push([`${c} · mes ${d.mes}`, pct(d.divergencia), pct(d.falso_positivo), pct(d.falso_negativo), pct(d.mudados)]));
     });
@@ -132,24 +132,26 @@
 
   /* ── 04 dumbbell ── */
   function renderDumb() {
-    const svg = d3.select('#c-dumb'), W = width(svg.node()), rowH = 52, m = { t: 8, r: 56, b: 30, l: 96 }, H = m.t + m.b + rowH * COMUNAS.length;
+    const svg = d3.select('#c-dumb'), W = width(svg.node()), rowH = 56, m = { t: 8, r: 20, b: 30, l: 96 }, H = m.t + m.b + rowH * COMUNAS.length;
     svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).selectAll('*').remove();
     const x = d3.scaleLinear().domain([0, .65]).range([m.l, W - m.r]), y = d3.scaleBand().domain(COMUNAS).range([m.t, H - m.b]);
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(4).tickSize(-(H - m.t - m.b)).tickFormat(''));
     svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(4).tickFormat(d => Math.round(d * 100) + '%').tickSizeOuter(0));
-    const ink = css('--md-on-surface'), surf = css('--md-surface-container-lowest');
+    const ink = css('--md-on-surface'), surf = css('--md-surface-container-lowest'), rshCol = css('--viz-3');
+    const rsh = c => D.contexto?.[c]?.rsh?.['0-40'];
     D.resumen.forEach(r => {
-      const on = comuna === 'Todas' || comuna === r.comuna, cy = y(r.comuna) + y.bandwidth() / 2;
+      const on = comuna === 'Todas' || comuna === r.comuna, cy = y(r.comuna) + y.bandwidth() / 2, q = rsh(r.comuna);
+      const vals = [r.elegibles_situado, r.priorizados_registro].concat(q != null ? [q] : []);
       const g = svg.append('g').attr('opacity', on ? 1 : .35).attr('class', 'mark-hover');
       g.append('text').attr('x', m.l - 12).attr('y', cy + 4).attr('text-anchor', 'end').attr('font-size', 14).attr('fill', ink).text(r.comuna);
-      g.append('line').attr('x1', x(r.elegibles_situado)).attr('x2', x(r.priorizados_registro)).attr('y1', cy).attr('y2', cy).attr('stroke', css('--viz-axis')).attr('stroke-width', 2);
+      g.append('line').attr('x1', x(d3.min(vals))).attr('x2', x(d3.max(vals))).attr('y1', cy).attr('y2', cy).attr('stroke', css('--viz-axis')).attr('stroke-width', 2);
       g.append('circle').attr('cx', x(r.elegibles_situado)).attr('cy', cy).attr('r', 6).attr('fill', surf).attr('stroke', ink).attr('stroke-width', 2);
       g.append('circle').attr('cx', x(r.priorizados_registro)).attr('cy', cy).attr('r', 6).attr('fill', ink).attr('stroke', surf).attr('stroke-width', 2);
-      g.append('text').attr('x', x(Math.max(r.priorizados_registro, r.elegibles_situado)) + 12).attr('y', cy + 4).attr('font-size', 12).attr('fill', css('--md-on-surface-variant')).text('+' + ((r.priorizados_registro - r.elegibles_situado) * 100).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' p.p.');
+      if (q != null) g.append('rect').attr('x', x(q) - 5.5).attr('y', cy - 5.5).attr('width', 11).attr('height', 11).attr('transform', `rotate(45 ${x(q)} ${cy})`).attr('fill', rshCol).attr('stroke', surf).attr('stroke-width', 2);
       g.append('rect').attr('x', m.l).attr('y', y(r.comuna)).attr('width', W - m.l - m.r).attr('height', y.bandwidth()).attr('fill', 'transparent')
-        .on('pointermove', e => showTT(e, `<div class="tt-sub">${r.comuna}</div><div class="row"><span>Prioriza el registro</span><span class="tt-val" style="font-size:16px">${pct(r.priorizados_registro)}</span></div><div class="row"><span>Elegible según vida situada</span><span class="tt-val" style="font-size:16px">${pct(r.elegibles_situado)}</span></div>`)).on('pointerleave', hideTT);
+        .on('pointermove', e => showTT(e, `<div class="tt-sub">${r.comuna}</div><div class="row"><span>Registro simulado</span><b>${pct(r.priorizados_registro)}</b></div><div class="row"><span>RSH 2023, tramo 40%</span><b>${q != null ? pct(q) : '—'}</b></div><div class="row"><span>Vida situada</span><b>${pct(r.elegibles_situado)}</b></div><div class="body-s" style="margin-top:6px">RSH: hogares inscritos, no todos.</div>`)).on('pointerleave', hideTT);
     });
-    table('t-dumb', ['Comuna', 'Prioriza el registro', 'Elegible situado', 'Diferencia (p.p.)'], D.resumen.map(r => [r.comuna, pct(r.priorizados_registro), pct(r.elegibles_situado), ((r.priorizados_registro - r.elegibles_situado) * 100).toFixed(1)]));
+    table('t-dumb', ['Comuna', 'Registro simulado', 'RSH 2023 (tramo 40%)', 'Vida situada'], D.resumen.map(r => [r.comuna, pct(r.priorizados_registro), rsh(r.comuna) != null ? pct(rsh(r.comuna)) : '—', pct(r.elegibles_situado)]));
   }
 
   /* ── 05 locus ── */
@@ -186,9 +188,9 @@
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="label-m muted" style="font-family:var(--mono)">${esc(c.id)}</span><span class="badge sec">caso compuesto</span></div>
         <div class="chip-set"><span class="chip assist"><span class="swatch" style="background:var(${t.v})"></span>${t.short}</span><span class="chip assist">${esc(LOCUS[c.locus] || c.locus)}</span></div>
         <div class="fields">
-          <span class="num">1</span><div><div class="lab">Qué representó</div>${esc(R.prediccion)} · percentil ${esc(R.percentil_registro)} · ${esc(R.numper_registrado)} personas registradas</div>
+          <span class="num">1</span><div><div class="lab">Qué representó</div>${esc(R.prediccion)} · percentil ${esc(R.percentil_registro)} · ${esc(R.numper_registrado)} ${+R.numper_registrado === 1 ? 'persona registrada' : 'personas registradas'}</div>
           <span class="num">2</span><div><div class="lab">Qué decidió</div>${esc(c.decision)}</div>
-          <span class="num">3</span><div><div class="lab">Qué ocurrió</div>Percentil situado ${esc(O.percentil_situado)} · ${O.reside_en_comuna ? 'reside en la comuna' : 'se mudó'} · ${esc(O.numper_real)} personas${ev ? '<br><span class="muted">' + esc(ev) + '</span>' : ''}</div>
+          <span class="num">3</span><div><div class="lab">Qué ocurrió</div>Percentil situado ${esc(O.percentil_situado)} · ${O.reside_en_comuna ? 'reside en la comuna' : 'se mudó'} · ${esc(O.numper_real)} ${+O.numper_real === 1 ? 'persona' : 'personas'}${ev ? '<br><span class="muted">' + esc(ev) + '</span>' : ''}</div>
           <span class="num">4</span><div><div class="lab">Quién resultó afectado</div>Hogar de ${esc(A.numper)} en ${esc(A.comuna)}, tenencia ${esc(String(A.tenencia).replace('_', ' / '))}</div>
           <span class="num">5</span><div><div class="lab">Qué reparación hubo</div>${esc(c.reparacion || 'Ninguna')}</div>
           <span class="num">6</span><div><div class="lab">Quién la formuló</div>${esc(F.quien)} · reconocimiento institucional: ${esc(F.reconocimiento_institucional)}</div>

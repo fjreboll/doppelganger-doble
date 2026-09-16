@@ -10,13 +10,16 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* paleta de pantalla (fija en ambos temas; pasos oscuros validados para daltonismo) */
-  const C = { vacio: '#0c0e13', trama: '#171a20', rm: '#1b1e24', borde: '#2e3139', piloto: '#e2e2e9', coincide: '#4f5563', fp: '#d95926', fn: '#3987e5', doble: '#ff8a80' };
+  const C = { vacio: '#0c0e13', trama: '#171a20', rm: '#1b1e24', borde: '#2e3139', piloto: '#e2e2e9', coincide: '#4f5563', fp: '#d95926', fn: '#3987e5', doble: '#ff8a80', muro: '#b9bcc6', ventana: '#1b1e24', techo: '#8e9099' };
   const RGB = Object.fromEntries(Object.entries(C).map(([k, h]) => [k, [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16))]));
   const ANCLA = { 'Santiago': 'end', 'La Pintana': 'end', 'Las Condes': 'start', 'Puente Alto': 'start' };
 
   const serie = {}; D.serie.forEach(s => (serie[s.comuna] ??= [])[s.mes] = s);
   const resumen = Object.fromEntries(D.resumen.map(r => [r.comuna, r]));
   const porIndice = Object.fromEntries(G.comunas.map(c => [c.i, c]));
+  /* sprites: R = techo (estado del hogar), W = muro, v = ventana/puerta */
+  const SPR = { casa: ['.R.', 'RRR', 'WvW'], edificio: ['RRR', 'vWv', 'WWW', 'vWv', 'WvW'] };
+  let sprites = [];
   let modo = null, grid = null, M = null, mes = 0, jugando = !reduce, ultimo = 0, pausaHasta = 0, img = null;
 
   const hash = i => { let x = (i + 1) * 2654435761 >>> 0; x ^= x >>> 16; x = Math.imul(x, 2246822507) >>> 0; x ^= x >>> 13; return (x >>> 0) / 4294967296; };
@@ -27,6 +30,27 @@
     const A = G.alfabeto; M = new Uint8Array(grid.cols * grid.rows);
     for (let k = 0; k < M.length; k++) M[k] = A.indexOf(grid.celdas[k]);
     cv.width = grid.cols; cv.height = grid.rows;
+    // casas y edificios: cantidad ∝ hogares; tipo según la proporción censal de departamentos
+    sprites = []; const ocup = new Uint8Array(M.length);
+    const cabe = (x0, y0, w, h, v) => { for (let y = y0 - 1; y <= y0 + h; y++) for (let x = x0 - 1; x <= x0 + w; x++) { if (x < 1 || y < 1 || x >= grid.cols - 1 || y >= grid.rows - 1) return false; const k = y * grid.cols + x; if (M[k] !== v || ocup[k]) return false; } return true; };
+    G.comunas.filter(c => c.piloto).forEach(c => {
+      const r = resumen[c.nombre], ctxv = (D.contexto || {})[c.nombre] || {}, deptos = (ctxv.vivienda || {}).departamento ?? .3;
+      
+      const celdas = []; for (let k = 0; k < M.length; k++) if (M[k] === c.i) celdas.push(k);
+      celdas.sort((a, b) => hash(a * 7 + c.i) - hash(b * 7 + c.i));
+      const n = Math.max(3, Math.min(Math.round(r.hogares / 5000), Math.floor(celdas.length / 16)));
+      let puestos = 0;
+      for (const k of celdas) {
+        if (puestos >= n) break;
+        const tipoPref = hash(k * 3 + 11) < deptos ? 'edificio' : 'casa';
+        for (const tipo of [tipoPref]) {
+          const f = SPR[tipo], w = f[0].length, h = f.length, x0 = k % grid.cols, y0 = Math.floor(k / grid.cols);
+          if (!cabe(x0, y0, w, h, c.i)) continue;
+          for (let y = y0 - 2; y <= y0 + h + 1; y++) for (let x = x0 - 2; x <= x0 + w + 1; x++) { const kk = y * grid.cols + x; if (kk >= 0 && kk < ocup.length) ocup[kk] = 1; }
+          sprites.push({ tipo, x0, y0, w, h, v: c.i, r: hash(k * 13 + 5) }); puestos++; break;
+        }
+      }
+    });
     img = ctx.createImageData(grid.cols, grid.rows);
     root.style.setProperty('--aspect', `${grid.cols} / ${grid.rows}`);
     // etiquetas
@@ -73,6 +97,11 @@
       const t = ty * cols + tx; if (piloto[M[t]] && hash(t) > .35) continue;
       const o = t * 4; px[o] = Math.round(px[o] * .45 + RGB.doble[0] * .55); px[o + 1] = Math.round(px[o + 1] * .45 + RGB.doble[1] * .55); px[o + 2] = Math.round(px[o + 2] * .45 + RGB.doble[2] * .55);
     }
+    for (const sp of sprites) {
+      const s = piloto[sp.v], estado = sp.r < s.falso_positivo ? RGB.fp : sp.r < s.falso_positivo + s.falso_negativo ? RGB.fn : RGB.techo, f = SPR[sp.tipo];
+      for (let y = sp.y0 - 1; y <= sp.y0 + sp.h; y++) for (let x = sp.x0 - 1; x <= sp.x0 + sp.w; x++) set(y * cols + x, RGB.vacio);
+      f.forEach((fila, dy) => [...fila].forEach((ch, dx) => { if (ch === '.') return; set((sp.y0 + dy) * cols + sp.x0 + dx, ch === 'R' ? estado : ch === 'W' ? RGB.muro : RGB.ventana); }));
+    }
     ctx.putImageData(img, 0, 0);
     root.querySelectorAll('.px-label').forEach(l => { const s = serie[l.dataset.comuna][mes]; l.querySelector('.v').textContent = `${pct(s.divergencia)} diverge`; });
     $('.px-mes').textContent = 'MES ' + String(mes).padStart(2, '0');
@@ -106,8 +135,8 @@
     if (!c) { tt.classList.remove('on'); return; }
     let html = `<div class="tt-sub">${c.nombre}</div>`;
     if (c.piloto) { const s = serie[c.nombre][mes], r = resumen[c.nombre];
-      html += `<div class="tt-val">${(100 * s.divergencia).toLocaleString('es-CL', { maximumFractionDigits: 1 })}%</div><div>hogares con divergencia · mes ${mes}</div><hr class="divider" style="margin:8px 0"><div class="row"><span><span class="key" style="background:${C.fp}"></span>Prioriza sin elegibilidad</span><b>${pct(s.falso_positivo)}</b></div><div class="row"><span><span class="key" style="background:${C.fn}"></span>Elegible no priorizado</span><b>${pct(s.falso_negativo)}</b></div><div class="body-s" style="margin-top:6px">${nf.format(r.hogares)} hogares sintéticos</div>`;
-    } else html += `<div class="body-s">Región Metropolitana · fuera de la muestra</div>`;
+      html += `<div class="tt-val">${(100 * s.divergencia).toLocaleString('es-CL', { maximumFractionDigits: 1 })}%</div><div>diverge · mes ${mes}</div><hr class="divider" style="margin:8px 0"><div class="row"><span><span class="key" style="background:${C.fp}"></span>Priorizado sin serlo</span><b>${pct(s.falso_positivo)}</b></div><div class="row"><span><span class="key" style="background:${C.fn}"></span>Excluido siendo elegible</span><b>${pct(s.falso_negativo)}</b></div><div class="body-s" style="margin-top:6px">${nf.format(r.hogares)} hogares · RSH tramo 40%: ${pct(((D.contexto || {})[c.nombre] || {}).rsh?.['0-40'] ?? NaN)} · ${pct(((D.contexto || {})[c.nombre] || {}).vivienda?.departamento ?? NaN)} deptos.</div>`;
+    } else html += `<div class="body-s">Fuera de la muestra</div>`;
     tt.innerHTML = html; tt.classList.add('on');
     const rr = tt.getBoundingClientRect(); let tx = e.clientX + 14, ty = e.clientY + 14;
     if (tx + rr.width > innerWidth - 8) tx = e.clientX - rr.width - 14; if (ty + rr.height > innerHeight - 8) ty = e.clientY - rr.height - 14;
@@ -115,6 +144,8 @@
   });
   cv.addEventListener('pointerleave', () => tt.classList.remove('on'));
 
+  root.querySelectorAll('.px-ico').forEach(icv => { const f = SPR[icv.dataset.ico], c2 = icv.getContext('2d'); c2.fillStyle = C.vacio; c2.fillRect(0, 0, icv.width, icv.height);
+    f.forEach((fila, dy) => [...fila].forEach((ch, dx) => { if (ch === '.') return; c2.fillStyle = ch === 'R' ? C.techo : ch === 'W' ? C.muro : C.ventana; c2.fillRect(dx + 1, dy + 1, 1, 1); })); });
   preparar();
   if (reduce) { mes = 24; }
   syncBtn(); dibujar(); syncRange();
