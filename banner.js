@@ -10,7 +10,7 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* paleta de pantalla (fija en ambos temas; pasos oscuros validados para daltonismo) */
-  const C = { vacio: '#0c0e13', trama: '#171a20', rm: '#1b1e24', borde: '#2e3139', piloto: '#e2e2e9', coincide: '#4f5563', fp: '#d95926', fn: '#3987e5', doble: '#ff8a80', muro: '#b9bcc6', ventana: '#1b1e24', techo: '#8e9099' };
+  const C = { vacio: '#000000', trama: '#171a20', rm: '#1b1e24', borde: '#2e3139', piloto: '#e2e2e9', coincide: '#4f5563', fp: '#d95926', fn: '#3987e5', doble: '#ff8a80', muro: '#b9bcc6', ventana: '#1b1e24', techo: '#8e9099' };
   const RGB = Object.fromEntries(Object.entries(C).map(([k, h]) => [k, [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16))]));
   const ANCLA = { 'Santiago': 'end', 'La Pintana': 'end', 'Las Condes': 'start', 'Puente Alto': 'start' };
 

@@ -18,10 +18,7 @@
 
   /* ── tema, app bar, tooltips, tablas ── */
   const root = document.documentElement;
-  try { const t = localStorage.getItem('doble-theme'); if (t) root.dataset.theme = t; } catch (e) {}
-  const setIcon = () => $('#theme span').textContent = (root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark' ? 'light_mode' : 'dark_mode';
-  setIcon();
-  $('#theme').onclick = () => { const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); root.dataset.theme = cur === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('doble-theme', root.dataset.theme); } catch (e) {} setIcon(); renderAll(); };
+  root.dataset.theme = 'dark';
   addEventListener('scroll', () => $('#appbar').classList.toggle('scrolled', scrollY > 4), { passive: true });
   const tt = $('#tt');
   const showTT = (e, html) => { tt.innerHTML = html; tt.classList.add('on'); const r = tt.getBoundingClientRect(); let x = e.clientX + 14, y = e.clientY + 14; if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14; if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14; tt.style.left = Math.max(8, x) + 'px'; tt.style.top = Math.max(8, y) + 'px'; };
@@ -57,9 +54,9 @@
     const barPath = (x0, y0, w, h) => { const r = Math.min(4, h, w / 2); return `M${x0},${y0 + h}V${y0 + r}Q${x0},${y0} ${x0 + r},${y0}H${x0 + w - r}Q${x0 + w},${y0} ${x0 + w},${y0 + r}V${y0 + h}Z`; };
     svg.append('g').selectAll('path').data(D.confianza).join('path').attr('class', 'mark-hover')
       .attr('d', (c, i) => barPath(x(i) + (x.bandwidth() - bw) / 2, y(c), bw, y(0) - y(c))).attr('fill', css('--viz-seq'))
-      .attr('opacity', (c, i) => (i === 8 || i === 9) ? 1 : .55)
+      .attr('opacity', (c, i) => (i === 8 || i === 9) ? 1 : .72)
       .on('pointermove', (e, c) => { const i = D.confianza.indexOf(c); showTT(e, `<div class="tt-sub">Vigintil p${i * 5}–p${i * 5 + 5} del registro</div><div class="tt-val">${pct(c)}</div><div>de acierto</div>`); d3.select(e.currentTarget).attr('opacity', 1); })
-      .on('pointerleave', (e) => { hideTT(); const i = D.confianza.indexOf(d3.select(e.currentTarget).datum()); d3.select(e.currentTarget).attr('opacity', (i === 8 || i === 9) ? 1 : .55); });
+      .on('pointerleave', (e) => { hideTT(); const i = D.confianza.indexOf(d3.select(e.currentTarget).datum()); d3.select(e.currentTarget).attr('opacity', (i === 8 || i === 9) ? 1 : .72); });
     const ux = x(8) - x.step() * .06;
     svg.append('line').attr('x1', ux).attr('x2', ux).attr('y1', m.t - 8).attr('y2', H - m.b).attr('stroke', css('--md-on-surface')).attr('stroke-width', 1);
     svg.append('text').attr('x', ux + 6).attr('y', m.t - 10).attr('font-size', 12).attr('fill', css('--md-on-surface')).attr('font-weight', 500).text('umbral p40');
@@ -214,5 +211,4 @@
   function renderAll() { renderConf(); renderFiltered(); }
   renderAll();
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { setIcon(); renderAll(); });
 })();
