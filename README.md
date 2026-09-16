@@ -1,6 +1,6 @@
 # Santiago Gemelo Digital · Registro público de divergencias (Doppelgänger A)
 
-**Sitio:** https://fjreboll.github.io/doppelganger-doble/ · **Par:** [Panoptes · Grafo del encargo SITIA (C)](https://fjreboll.github.io/doppelganger-encargo/)
+**Sitio:** https://fjreboll.github.io/doppelganger-doble/ · **Par:** [Beholder · Grafo del encargo SITIA (C)](https://fjreboll.github.io/doppelganger-encargo/)
 
 Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (Doctorado en Arquitectura, Diseño y Estudios Urbanos UC). Un gemelo sintético de 559.440 hogares de cuatro comunas de Santiago (La Pintana, Puente Alto, Santiago, Las Condes), construido con CASEN 2022 recalibrada a los márgenes comunales del Censo 2024, sobre el cual un registro administrativo prioriza una prestación durante 24 meses simulados. Cada decisión lleva costura obligatoria (confianza, antigüedad del dato, umbral, procedencia) y cada discrepancia con la vida situada entra al registro con seis campos.
 

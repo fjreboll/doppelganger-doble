@@ -1,4 +1,4 @@
-/* Doppelgänger · navegación compartida (Santiago Gemelo Digital y Panoptes)
+/* Doppelgänger · navegación compartida (Santiago Gemelo Digital y Beholder)
    Índice de secciones con seguimiento de lectura, barra de progreso, aparición progresiva de bloques,
    enlaces profundos (#seccion), botón de subida y atajos de teclado. Sin dependencias. */
 (() => {
