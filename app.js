@@ -41,6 +41,15 @@
   $('#seg-comuna').innerHTML = ['Todas', ...COMUNAS].map(c => `<button aria-pressed="${c === comuna}" data-c="${c}">${c}</button>`).join('');
   $('#seg-comuna').onclick = e => { const b = e.target.closest('button'); if (!b) return; comuna = b.dataset.c; document.querySelectorAll('#seg-comuna button').forEach(x => x.setAttribute('aria-pressed', x.dataset.c === comuna)); renderFiltered(); };
   const sel = () => comuna === 'Todas' ? COMUNAS : [comuna];
+  const pulsar = el => { if (!el) return; el.classList.remove('pulso'); void el.offsetWidth; el.classList.add('pulso'); };
+  /* API para el banner y la navegación: filtrar por comuna y llevar la vista al bloque correspondiente */
+  window.gemelo = {
+    comunas: COMUNAS,
+    setComuna(c, destino = 'cien') {
+      const b = document.querySelector(`#seg-comuna button[data-c="${c}"]`); if (b) b.click();
+      if (destino) { window.doppelNav?.irA(destino, false); setTimeout(() => pulsar(document.querySelector(`#${destino} .card`)), 500); }
+    }
+  };
 
   /* ── 01 confianza ── */
   function renderConf() {
@@ -146,7 +155,7 @@
       g.append('circle').attr('cx', x(r.priorizados_registro)).attr('cy', cy).attr('r', 6).attr('fill', ink).attr('stroke', surf).attr('stroke-width', 2);
       if (q != null) g.append('rect').attr('x', x(q) - 5.5).attr('y', cy - 5.5).attr('width', 11).attr('height', 11).attr('transform', `rotate(45 ${x(q)} ${cy})`).attr('fill', rshCol).attr('stroke', surf).attr('stroke-width', 2);
       g.append('rect').attr('x', m.l).attr('y', y(r.comuna)).attr('width', W - m.l - m.r).attr('height', y.bandwidth()).attr('fill', 'transparent')
-        .on('pointermove', e => showTT(e, `<div class="tt-sub">${r.comuna}</div><div class="row"><span>Registro simulado</span><b>${pct(r.priorizados_registro)}</b></div><div class="row"><span>RSH 2023, tramo 40%</span><b>${q != null ? pct(q) : '—'}</b></div><div class="row"><span>Vida situada</span><b>${pct(r.elegibles_situado)}</b></div><div class="body-s" style="margin-top:6px">RSH: hogares inscritos, no todos.</div>`)).on('pointerleave', hideTT);
+        .on('click', () => window.gemelo.setComuna(comuna === r.comuna ? 'Todas' : r.comuna, null)).on('pointermove', e => showTT(e, `<div class="tt-sub">${r.comuna}</div><div class="row"><span>Registro simulado</span><b>${pct(r.priorizados_registro)}</b></div><div class="row"><span>RSH 2023, tramo 40%</span><b>${q != null ? pct(q) : '—'}</b></div><div class="row"><span>Vida situada</span><b>${pct(r.elegibles_situado)}</b></div><div class="body-s" style="margin-top:6px">RSH: hogares inscritos, no todos. Clic: filtrar.</div>`)).on('pointerleave', hideTT);
     });
     table('t-dumb', ['Comuna', 'Registro simulado', 'RSH 2023 (tramo 40%)', 'Vida situada'], D.resumen.map(r => [r.comuna, pct(r.priorizados_registro), rsh(r.comuna) != null ? pct(rsh(r.comuna)) : '—', pct(r.elegibles_situado)]));
   }
@@ -224,6 +233,22 @@
   ];
   $('#fx-factores').innerHTML = FACT.map(([n, o, uso, nota, cls]) => `<li class="${cls || ''}"><span><b>${n}</b>${nota ? `<br><span>${nota}</span>` : ''}</span><span class="fx-tag ${o}">${{ c: 'Censo', d: 'CASEN', s: 'Simulación' }[o]}</span><span class="fx-uso" aria-label="${uso.includes('no') ? 'no se usa en la clasificación' : 'lo usa: ' + uso.map(u => u === 'reg' ? 'registro' : 'vida situada').join(' y ')}">${['reg', 'sit'].map(u => uso.includes('no') ? (u === 'sit' ? '<span class="k no">—</span>' : '<span class="k off"></span>') : `<span class="k ${uso.includes(u) ? u : 'off'}">${u === 'reg' ? 'R' : 'S'}</span>`).join('')}</span></li>`).join('');
 
+  // enlaces del diagrama: cada factor ilumina la lectura que lo usa; el tipo de vivienda lleva al gráfico
+  document.querySelectorAll('#fx-factores li').forEach((li, i) => {
+    const uso = FACT[i][2];
+    li.tabIndex = 0;
+    const on = v => document.querySelectorAll('.fx-rule.reg, .fx-rule.sit').forEach(r => r.classList.toggle('fx-on', v && uso.some(u => r.classList.contains(u))));
+    const off = v => document.querySelectorAll('.fx-rule.reg, .fx-rule.sit').forEach(r => r.classList.toggle('fx-off', v && uso.includes('no')));
+    li.addEventListener('pointerenter', () => { on(true); off(true); }); li.addEventListener('pointerleave', () => { on(false); off(false); });
+    li.addEventListener('focus', () => { on(true); off(true); }); li.addEventListener('blur', () => { on(false); off(false); });
+    if (FACT[i][4] === 'viv') {
+      li.classList.add('fx-link'); li.setAttribute('role', 'link'); li.title = 'Ver casas y departamentos ante la regla';
+      const ir = () => { const card = document.getElementById('c-viv-p').closest('.card'); const y = card.getBoundingClientRect().top + scrollY - 88; scrollTo({ top: y, behavior: 'smooth' }); setTimeout(() => pulsar(card), 450); };
+      li.addEventListener('click', ir); li.addEventListener('keydown', e => { if (e.key === 'Enter') ir(); });
+    }
+  });
+  document.querySelectorAll('.fx-tipo').forEach(t => { t.style.cursor = 'pointer'; t.addEventListener('click', () => document.querySelector('#fx-factores li.viv')?.click()); });
+
   function renderViv() {
     const V = D.vivienda_clasificacion; if (!V) return;
     const ink = css('--md-on-surface'), surf = css('--md-surface-container-lowest');
@@ -242,7 +267,7 @@
         if (a != null) g.append('circle').attr('cx', x(a)).attr('cy', cy).attr('r', 6).attr('fill', ink).attr('stroke', surf).attr('stroke-width', 2);
         const fila = t => f[t] ? `<div class="row"><span>${t === 'casa' ? 'Casas' : 'Departamentos'} (${nf.format(f[t].hogares)})</span><b>${pct(f[t][campo])}</b></div>` : '';
         g.append('rect').attr('x', m.l).attr('y', y(c)).attr('width', W - m.l - m.r).attr('height', y.bandwidth()).attr('fill', 'transparent')
-          .on('pointermove', e => showTT(e, `<div class="tt-sub">${c}</div>${fila('casa')}${fila('departamento')}<div class="body-s" style="margin-top:6px">Mezcla sintética casa/depto: ${pct(f.casa?.share_sintetico ?? 0, 0)} / ${pct(f.departamento?.share_sintetico ?? 0, 0)} · Censo 2024: ${pct(f.casa?.share_censo ?? 0, 0)} / ${pct(f.departamento?.share_censo ?? 0, 0)}</div>`)).on('pointerleave', hideTT);
+          .on('click', () => window.gemelo.setComuna(c)).on('pointermove', e => showTT(e, `<div class="tt-sub">${c}</div>${fila('casa')}${fila('departamento')}<div class="body-s" style="margin-top:6px">Mezcla sintética casa/depto: ${pct(f.casa?.share_sintetico ?? 0, 0)} / ${pct(f.departamento?.share_sintetico ?? 0, 0)} · Censo 2024: ${pct(f.casa?.share_censo ?? 0, 0)} / ${pct(f.departamento?.share_censo ?? 0, 0)}</div><div class="body-s" style="margin-top:4px">Clic: ver ${c} en el tablero.</div>`)).on('pointerleave', hideTT);
       });
     };
     const todos = COMUNAS.flatMap(c => Object.values(V[c]));

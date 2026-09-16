@@ -1,6 +1,6 @@
 # Santiago Gemelo Digital · Registro público de divergencias (Doppelgänger A)
 
-**Sitio:** https://fjreboll.github.io/doppelganger-doble/ · **Par:** [Grafo del encargo (C)](https://fjreboll.github.io/doppelganger-encargo/)
+**Sitio:** https://fjreboll.github.io/doppelganger-doble/ · **Par:** [Panoptes · Grafo del encargo SITIA (C)](https://fjreboll.github.io/doppelganger-encargo/)
 
 Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (Doctorado en Arquitectura, Diseño y Estudios Urbanos UC). Un gemelo sintético de 559.440 hogares de cuatro comunas de Santiago (La Pintana, Puente Alto, Santiago, Las Condes), construido con CASEN 2022 recalibrada a los márgenes comunales del Censo 2024, sobre el cual un registro administrativo prioriza una prestación durante 24 meses simulados. Cada decisión lleva costura obligatoria (confianza, antigüedad del dato, umbral, procedencia) y cada discrepancia con la vida situada entra al registro con seis campos.
 
@@ -13,6 +13,7 @@ Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (D
 | `index.html`, `app.js` | Interfaz (Material Design 3; visualizaciones D3 con paleta validada para daltonismo) |
 | `banner.js`, `assets/banner_grid.json` | Banner pixel art: mapa de la RM rasterizado (300×116 celdas escritorio, 120×122 móvil). Las celdas de las cuatro comunas cambian de estado mes a mes; casas y edificios se dibujan en proporción a la tipología de vivienda del Censo 2024 y su techo toma el color del estado |
 | Sección 01 · El hogar | Diagrama de factores del hogar sintético (qué calibra el Censo, qué hereda el donante CASEN, qué lee el registro y qué la vida situada) y comparación casas/departamentos al mes 24, generada con `pipeline/src/13_vivienda_clasificacion.py` (tipo de vivienda CASEN v1 del donante; contraste holdout con Censo 2024 V5) |
+| `nav.js` | Navegación compartida con el sitio C: índice de secciones con seguimiento de lectura, barra de progreso, aparición progresiva, enlaces profundos y atajos (`[` `]` secciones, `t` arriba). Clic en una comuna del banner, del gráfico 05 o del de viviendas filtra el tablero; el diagrama del hogar ilumina la lectura que usa cada factor |
 | `data.json` | Datos exportados desde la base común `doppelganger.db` |
 | `assets/` | Hoja de estilo M3, D3 v7 y tipografías auto-alojadas (Roboto Flex, Roboto Mono, Material Symbols) |
 | `pipeline/` | Código reproducible: ingesta, calibración, simulación, grafo, validación y exportación |

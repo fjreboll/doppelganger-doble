@@ -111,8 +111,10 @@
     cv.setAttribute('aria-label', `Mapa pixelado de la Región Metropolitana con las cuatro comunas del gemelo sintético. Mes ${mes} de 24: ${nf.format(Math.round(tot.d))} de ${nf.format(tot.h)} hogares con divergencia entre registro y vida situada.`);
   }
 
+  let visible = true;
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(root);
   function bucle(t) {
-    if (jugando && t > pausaHasta && t - ultimo > 260) {
+    if (visible && jugando && t > pausaHasta && t - ultimo > 260) {
       ultimo = t; mes = mes >= 24 ? 0 : mes + 1; dibujar();
       if (mes === 24) pausaHasta = t + 2600;
     }
@@ -136,13 +138,22 @@
     let html = `<div class="tt-sub">${c.nombre}</div>`;
     if (c.piloto) { const s = serie[c.nombre][mes], r = resumen[c.nombre];
       html += `<div class="tt-val">${(100 * s.divergencia).toLocaleString('es-CL', { maximumFractionDigits: 1 })}%</div><div>diverge · mes ${mes}</div><hr class="divider" style="margin:8px 0"><div class="row"><span><span class="key" style="background:${C.fp}"></span>Priorizado sin serlo</span><b>${pct(s.falso_positivo)}</b></div><div class="row"><span><span class="key" style="background:${C.fn}"></span>Excluido siendo elegible</span><b>${pct(s.falso_negativo)}</b></div><div class="body-s" style="margin-top:6px">${nf.format(r.hogares)} hogares · RSH tramo 40%: ${pct(((D.contexto || {})[c.nombre] || {}).rsh?.['0-40'] ?? NaN)} · ${pct(((D.contexto || {})[c.nombre] || {}).vivienda?.departamento ?? NaN)} deptos.</div>`;
+      html += `<div class="body-s" style="margin-top:4px;color:var(--md-primary)">Clic: filtrar el tablero por ${c.nombre}</div>`;
     } else html += `<div class="body-s">Fuera de la muestra</div>`;
+    cv.style.cursor = c.piloto ? 'pointer' : 'crosshair';
     tt.innerHTML = html; tt.classList.add('on');
     const rr = tt.getBoundingClientRect(); let tx = e.clientX + 14, ty = e.clientY + 14;
     if (tx + rr.width > innerWidth - 8) tx = e.clientX - rr.width - 14; if (ty + rr.height > innerHeight - 8) ty = e.clientY - rr.height - 14;
     tt.style.left = Math.max(8, tx) + 'px'; tt.style.top = Math.max(8, ty) + 'px';
   });
   cv.addEventListener('pointerleave', () => tt.classList.remove('on'));
+  cv.addEventListener('click', e => {
+    const b = cv.getBoundingClientRect(), x = Math.floor((e.clientX - b.left) / b.width * grid.cols), y = Math.floor((e.clientY - b.top) / b.height * grid.rows);
+    const c = porIndice[M[y * grid.cols + x]];
+    if (c?.piloto && window.gemelo) { tt.classList.remove('on'); window.gemelo.setComuna(c.nombre); }
+  });
+  // las etiquetas de comuna también filtran
+  root.querySelector('.px-labels')?.addEventListener('click', e => { const n = e.target.closest('.px-label')?.dataset.comuna; if (n && window.gemelo) window.gemelo.setComuna(n); });
 
   root.querySelectorAll('.px-ico').forEach(icv => { const f = SPR[icv.dataset.ico], c2 = icv.getContext('2d'); c2.fillStyle = C.vacio; c2.fillRect(0, 0, icv.width, icv.height);
     f.forEach((fila, dy) => [...fila].forEach((ch, dx) => { if (ch === '.') return; c2.fillStyle = ch === 'R' ? C.techo : ch === 'W' ? C.muro : C.ventana; c2.fillRect(dx + 1, dy + 1, 1, 1); })); });
