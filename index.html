@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DOBLE · Registro de divergencias</title>
+<meta name="description" content="Gemelo sintético de cuatro comunas de Santiago donde cada decisión lleva costura y cada divergencia queda registrada. POC Doppelganger (A).">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23415f91'/><circle cx='12' cy='16' r='6' fill='none' stroke='white' stroke-width='2.5'/><circle cx='20' cy='16' r='6' fill='none' stroke='%23d6e3ff' stroke-width='2.5' stroke-dasharray='3 2'/></svg>">
+<link rel="stylesheet" href="assets/m3.css">
+<style>
+.hero{padding:32px 0 8px}
+.hero .display-m{max-width:880px;margin:12px 0 16px}
+.hero .body-l{max-width:760px}
+.stat .v{font:400 45px/52px var(--font);letter-spacing:0;margin:4px 0}
+.stat .ic{width:40px;height:40px;border-radius:var(--shape-m);display:grid;place-items:center;background:var(--md-primary-container);color:var(--md-on-primary-container);margin-bottom:12px}
+.stat.err .ic{background:var(--md-error-container);color:var(--md-on-error-container)}
+.filterbar{position:sticky;top:64px;z-index:15;background:var(--md-surface);padding:12px 0;border-bottom:1px solid var(--md-outline-variant)}
+.filterbar .wrap{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.chart-card header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.chart-card .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:4px 0 12px;font-size:14px;line-height:20px;color:var(--md-on-surface-variant)}
+.legend .sw{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
+.legend .ln{width:16px;height:2px;border-radius:1px;display:inline-block;margin-right:6px;vertical-align:4px}
+.legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:0}
+.waffles{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.waffle h4{margin-bottom:8px}
+.waffle svg{width:100%;height:auto;display:block;max-width:260px}
+.minis{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.chart-svg{width:100%;display:block;overflow:visible}
+.insight{display:flex;gap:12px;padding:12px 16px;border-radius:var(--shape-m);background:var(--md-surface-container);margin-top:12px}
+.insight .material-symbols-outlined{color:var(--md-primary);font-size:24px}
+.case{display:flex;flex-direction:column;gap:12px}
+.case .fields{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px 8px;font-size:14px;line-height:20px}
+.case .num{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--md-surface-container-high);font:500 12px/16px var(--font)}
+.case .lab{font:500 12px/16px var(--font);letter-spacing:.5px;color:var(--md-on-surface-variant);text-transform:uppercase}
+.seam{border-radius:var(--shape-s);padding:10px 12px;border:1px dashed var(--viz-critical);font-size:12px;line-height:16px;letter-spacing:.4px;color:var(--md-on-surface-variant);background:color-mix(in srgb,var(--viz-critical) 5%,transparent)}
+.seam b{color:var(--md-on-surface);font-weight:500}
+.stepper{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));counter-reset:s}
+.step{position:relative;padding:16px;border-radius:var(--shape-m);background:var(--md-surface-container-low)}
+.step::before{counter-increment:s;content:counter(s,decimal-leading-zero);font:500 12px/16px var(--mono);color:var(--md-primary)}
+.check{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--md-outline-variant)}
+.check .material-symbols-outlined{font-size:22px}
+.check.ok .material-symbols-outlined{color:#0ca30c}.check.bad .material-symbols-outlined{color:var(--viz-critical)}
+.tablewrap{display:none;margin-top:12px}.tablewrap.on{display:block}
+.axis text{fill:var(--viz-muted);font-size:12px}
+.axis path,.axis line{stroke:var(--viz-axis)}
+.gridline line{stroke:var(--viz-grid)}
+.gridline path{display:none}
+.mark-hover{cursor:pointer}
+@media (max-width:600px){.filterbar .body-s,.filterbar .label-l{display:none}.hide-s{display:none}.stat .v{font-size:36px;line-height:44px}}
+</style>
+</head>
+<body>
+<header class="top-app-bar" id="appbar">
+  <span class="material-symbols-outlined" style="color:var(--md-primary);font-size:24px;margin:0 8px 0 4px">difference</span>
+  <div class="title title-l">DOBLE · Registro de divergencias</div>
+  <a class="btn text" id="link-c" href="https://fjreboll.github.io/doppelganger-encargo/" title="Ir al grafo del encargo"><span class="material-symbols-outlined">hub</span><span class="hide-s">Grafo C</span></a>
+  <button class="icon-btn" id="theme" aria-label="Cambiar tema"><span class="material-symbols-outlined">dark_mode</span></button>
+  <a class="icon-btn" href="https://github.com/fjreboll/doppelganger-doble" aria-label="Código en GitHub"><span class="material-symbols-outlined">code</span></a>
+</header>
+
+<main>
+<div class="wrap hero">
+  <span class="overline">Doppelganger · Prueba de concepto A · caso compuesto</span>
+  <h1 class="display-m">Cuando el registro decide, la vida diverge.</h1>
+  <p class="body-l muted">Un gemelo sintético de cuatro comunas de Santiago (CASEN 2022 recalibrada a los márgenes del Censo 2024) sobre el que un registro administrativo prioriza una prestación. Cada decisión lleva su <b>costura</b> —confianza, antigüedad del dato, umbral y procedencia— y cada discrepancia con la vida situada entra al <b>registro público de divergencias</b> con sus seis campos.</p>
+  <div class="chip-set" style="margin-top:20px">
+    <span class="chip assist"><span class="material-symbols-outlined">science</span>Todos los hogares son sintéticos</span>
+    <span class="chip assist"><span class="material-symbols-outlined">rule</span>Regla análoga, no el algoritmo CSE-RSH</span>
+    <span class="chip assist"><span class="material-symbols-outlined">calendar_month</span>Horizonte simulado: 24 meses</span>
+  </div>
+</div>
+
+<div class="wrap"><div class="grid g-4" id="stats" style="margin:24px 0 16px"></div></div>
+
+<section class="wrap" id="costura">
+  <div class="sec-head"><div><span class="overline">01 · La costura</span><h2 class="headline-s">La confianza que el propio sistema podría conocer</h2></div></div>
+  <div class="card chart-card">
+    <header><div><h3 class="title-m">Probabilidad de que la clasificación situada coincida con la registrada, por vigintil del registro</h3><p class="body-m muted">Estimada en CASEN 2022 nacional (factor regional). Todas las comunas.</p></div>
+    <button class="btn text" data-table="t-conf"><span class="material-symbols-outlined">table</span>Tabla</button></header>
+    <svg class="chart-svg" id="c-conf" role="img" aria-label="Confianza por vigintil del registro"></svg>
+    <div class="tablewrap scroll-x" id="t-conf"></div>
+    <div class="insight"><span class="material-symbols-outlined">lightbulb</span><p class="body-m" id="ins-conf"></p></div>
+  </div>
+</section>
+
+<div class="filterbar"><div class="wrap">
+  <span class="label-l muted"><span class="material-symbols-outlined">filter_alt</span> Comuna</span>
+  <div class="seg" id="seg-comuna" role="group" aria-label="Filtrar por comuna"></div>
+  <span class="body-s muted">El filtro aplica a todas las secciones siguientes.</span>
+</div></div>
+
+<section class="wrap" id="cien">
+  <div class="sec-head"><div><span class="overline">02 · Magnitud</span><h2 class="headline-s">De cada 100 hogares, a t + 24 meses</h2></div></div>
+  <div class="card chart-card">
+    <header><div><h3 class="title-m">Coincidencia y tipología de la divergencia entre registro y vida situada</h3><p class="body-m muted">Cada cuadro es un hogar de cada cien. Priorización: registro bajo el percentil 40; elegibilidad situada: percentil 40 y residencia en la comuna.</p></div>
+    <button class="btn text" data-table="t-waffle"><span class="material-symbols-outlined">table</span>Tabla</button></header>
+    <div class="legend" id="lg-waffle"></div>
+    <div class="waffles" id="c-waffle"></div>
+    <div class="tablewrap scroll-x" id="t-waffle"></div>
+  </div>
+</section>
+
+<section class="wrap" id="tiempo">
+  <div class="sec-head"><div><span class="overline">03 · Divergencia sin escena</span><h2 class="headline-s">La brecha crece sin que ninguna decisión cambie de forma visible</h2></div></div>
+  <div class="card chart-card">
+    <header><div><h3 class="title-m">Proporción de hogares con divergencia, mes a mes</h3><p class="body-m muted">Mudanzas, pérdidas de empleo formal, informalidad y cambios de composición ocurren en la vida; el registro los incorpora con rezago o nunca.</p></div>
+    <button class="btn text" data-table="t-serie"><span class="material-symbols-outlined">table</span>Tabla</button></header>
+    <div class="minis" id="c-serie"></div>
+    <div class="tablewrap scroll-x" id="t-serie"></div>
+  </div>
+</section>
+
+<section class="wrap" id="brecha">
+  <div class="grid g-2">
+    <div class="card chart-card">
+      <header><div><span class="overline">04 · Dos prácticas de conocimiento</span><h3 class="title-m" style="margin-top:4px">Priorizados por el registro frente a elegibles según la vida situada</h3></div>
+      <button class="btn text" data-table="t-dumb"><span class="material-symbols-outlined">table</span>Tabla</button></header>
+      <div class="legend"><span><span class="dot" style="background:var(--md-on-surface)"></span>Registro</span><span><span class="dot" style="border:2px solid var(--md-on-surface);width:10px;height:10px"></span>Situado</span></div>
+      <svg class="chart-svg" id="c-dumb" role="img" aria-label="Comparación registro y situado por comuna"></svg>
+      <div class="tablewrap scroll-x" id="t-dumb"></div>
+    </div>
+    <div class="card chart-card">
+      <header><div><span class="overline">05 · Locus situado</span><h3 class="title-m" style="margin-top:4px">Dónde nace cada divergencia</h3></div>
+      <button class="btn text" data-table="t-locus"><span class="material-symbols-outlined">table</span>Tabla</button></header>
+      <div class="legend" id="lg-locus"></div>
+      <svg class="chart-svg" id="c-locus" role="img" aria-label="Entradas del registro por tipología y locus"></svg>
+      <div class="tablewrap scroll-x" id="t-locus"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="registro">
+  <div class="sec-head"><div><span class="overline">06 · El registro</span><h2 class="headline-s">Entradas del registro público de divergencias</h2><p class="body-m muted" style="margin-top:4px">Muestra estratificada por tipología y locus. Los seis campos del dispositivo; la costura, en borde discontinuo.</p></div>
+  <div class="chip-set" id="chips-tipo"></div></div>
+  <div class="grid g-3" id="casos"></div>
+  <div style="text-align:center;margin-top:16px"><button class="btn tonal" id="mas-casos"><span class="material-symbols-outlined">expand_more</span><span class="n">Ver más</span></button></div>
+</section>
+
+<section class="wrap" id="metodo">
+  <div class="sec-head"><div><span class="overline">07 · Método</span><h2 class="headline-s">Cómo se construyó el gemelo y cómo se valida a sí mismo</h2></div></div>
+  <div class="stepper">
+    <div class="step"><h4 class="title-s">Ingesta</h4><p class="body-s muted">Fuentes con procedencia y plano de evidencia; márgenes comunales del Censo 2024; hogares donantes CASEN 2022.</p></div>
+    <div class="step"><h4 class="title-s">Calibración</h4><p class="body-s muted">Pesos entrópicos que reproducen hogares, edad y tenencia; síntesis de un hogar por hogar censado.</p></div>
+    <div class="step"><h4 class="title-s">Deriva</h4><p class="body-s muted">24 meses de eventos situados; el registro ve ingreso formal en promedio móvil de 12 meses y actualiza con rezago.</p></div>
+    <div class="step"><h4 class="title-s">Decisión con costura</h4><p class="body-s muted">Ninguna decisión sin confianza, antigüedad, umbral y procedencia (restricción NOT NULL).</p></div>
+    <div class="step"><h4 class="title-s">Registro</h4><p class="body-s muted">Cada discrepancia entra con seis campos, tipología y locus.</p></div>
+    <div class="step"><h4 class="title-s">Autorregistro</h4><p class="body-s muted">El dispositivo declara sus propias inexactitudes y se audita de forma independiente.</p></div>
+  </div>
+  <div class="grid g-2" style="margin-top:16px">
+    <div class="card"><h3 class="title-m" style="margin-bottom:8px">Validación independiente</h3><div id="val"></div></div>
+    <div class="card"><h3 class="title-m" style="margin-bottom:8px">Calibración y holdout</h3><div class="scroll-x" id="cal"></div>
+      <h3 class="title-m" style="margin:20px 0 8px">Supuestos de la simulación</h3><div class="scroll-x" id="param"></div></div>
+  </div>
+  <h3 class="title-l" style="margin:32px 0 12px">Autorregistro: el registro también diverge</h3>
+  <div id="auto"></div>
+  <h3 class="title-l" style="margin:32px 0 12px">Fuentes</h3>
+  <div class="card scroll-x" id="fuentes"></div>
+</section>
+</main>
+
+<footer><div class="wrap grid g-3">
+  <div><p class="title-m">Doppelganger · POC v0.1</p><p class="body-m muted">Programa de dispositivos de diseño crítico sobre divergencia algorítmica en herramientas dotadas de IA en lo público del Cono Sur. Doctorado en Arquitectura, Diseño y Estudios Urbanos UC.</p></div>
+  <div><p class="title-s">Ética del material</p><p class="body-m muted">Todos los hogares son casos compuestos. CASEN es microdato público anonimizado y la síntesis perturba los ingresos para impedir copias del donante. No hay entrada ni salida de datos personales reales.</p></div>
+  <div><p class="title-s">Enlaces</p><p class="body-m"><a href="https://fjreboll.github.io/doppelganger-encargo/">C · Grafo del encargo</a><br><a href="https://github.com/fjreboll/doppelganger-doble">Código y datos del sitio</a></p><p class="body-s muted" id="gen"></p></div>
+</div></footer>
+<div class="tooltip" id="tt" role="tooltip"></div>
+<script src="assets/d3.v7.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
