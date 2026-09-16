@@ -11,6 +11,7 @@ Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (D
 | Ruta | Contenido |
 |---|---|
 | `index.html`, `app.js` | Interfaz (Material Design 3; visualizaciones D3 con paleta validada para daltonismo) |
+| `banner.js`, `assets/banner_grid.json` | Banner pixel art: mapa de la Región Metropolitana rasterizado (300×116 celdas escritorio, 120×122 móvil) donde cada celda de las cuatro comunas cambia de estado mes a mes según la serie simulada |
 | `data.json` | Datos exportados desde la base común `doppelganger.db` |
 | `assets/` | Hoja de estilo M3, D3 v7 y tipografías auto-alojadas (Roboto Flex, Roboto Mono, Material Symbols) |
 | `pipeline/` | Código reproducible: ingesta, calibración, simulación, grafo, validación y exportación |
@@ -28,6 +29,8 @@ bash pipeline/run_all.sh
 - Encuesta CASEN 2022, microdatos · Ministerio de Desarrollo Social y Familia (vía espejo `bastianolea/casen_comparador_ingresos`)
 - Censo de Población y Vivienda 2024, tabulados comunales D1, D5, H1, V3 · INE (vía espejo `bastianolea/censo_2024`)
 - Estimaciones comunales de pobreza SAE 2022 · Observatorio Social MDSF (vía `cortega26/chile-hub`)
+- Límites comunales de la Región Metropolitana · BCN (vía espejo `caracena/chile-geojson@92332f8`), rasterizados con `pipeline/src/08_banner_pixel.py`
+- Tipografías pixel: Pixelify Sans y VT323 (SIL Open Font License), auto-alojadas
 
 ## Límites declarados
 
