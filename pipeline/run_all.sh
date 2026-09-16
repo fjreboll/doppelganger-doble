@@ -10,3 +10,5 @@ done
 [ -f ../data/raw/sinim_2019-2023.xlsx ] && python3 09_contexto_rsh_vivienda.py ../data/raw/sinim_2019-2023.xlsx ../.. || echo "── 09_contexto omitido: falta data/raw/sinim_2019-2023.xlsx"
 # banner del sitio C (grilla con las 12 comunas nombradas por SITIA); escribe en un clon hermano doppelganger-encargo
 [ -f ../data/raw/13.geojson ] && [ -d ../../../doppelganger-encargo ] && python3 10_banner_sitia.py ../data/raw/13.geojson ../../../doppelganger-encargo/assets/banner_grid_sitia.json || echo "── 10_banner_sitia omitido"
+# tipo de vivienda (casa/departamento) del donante y su reparto en la clasificación (requiere 09)
+[ -f ../data/raw/casen2022.parquet ] && python3 13_vivienda_clasificacion.py ../.. || echo "── 13_vivienda omitido"

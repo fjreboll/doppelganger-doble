@@ -54,6 +54,49 @@
 @font-face{font-family:"Pixelify Sans";font-style:normal;font-display:swap;font-weight:600;src:url(assets/fonts/pixelify-sans-latin-ext-600-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"VT323";font-style:normal;font-display:swap;font-weight:400;src:url(assets/fonts/vt323-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"VT323";font-style:normal;font-display:swap;font-weight:400;src:url(assets/fonts/vt323-latin-ext-400-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+/* 01 · diagrama de factores del hogar */
+.fx{padding:24px}
+.fx-grid{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1.5fr) 28px minmax(0,1.1fr);gap:12px;align-items:stretch}
+.fx-arrow{display:grid;place-items:center;color:var(--md-outline)}
+.fx-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.fx-h{display:flex;align-items:center;gap:8px;font:500 14px/20px var(--font);letter-spacing:.1px;color:var(--md-on-surface);margin:0 0 2px}
+.fx-n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--md-primary-container);color:var(--md-on-primary-container);font:500 12px/16px var(--mono)}
+.fx-src,.fx-rule{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:var(--shape-s);background:var(--md-surface-container-low);border:1px solid #1f1f22;font-size:13px;line-height:18px;color:var(--md-on-surface-variant)}
+.fx-src b,.fx-rule>b{color:var(--md-on-surface);font:500 14px/20px var(--font)}
+.fx-src.sim{border-style:dashed}
+.fx-rule code{font:400 12px/18px var(--mono);color:var(--md-on-surface);background:none;white-space:normal}
+.fx-rule.reg{border-left:3px solid var(--md-on-surface)}
+.fx-rule.sit{border-left:3px solid var(--md-outline)}
+.fx-rule.out{border:1px dashed var(--viz-critical)}
+.fx-casa{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fx-tipo{display:grid;grid-template-columns:28px 1fr;gap:0 10px;align-items:center;padding:10px 12px;border-radius:var(--shape-s);background:var(--md-surface-container);font-size:12px;line-height:16px;color:var(--md-on-surface-variant)}
+.fx-tipo svg{grid-row:span 2;width:28px;height:28px;fill:var(--md-on-surface)}.fx-tipo svg .w{fill:var(--md-surface-container)}
+.fx-tipo b{color:var(--md-on-surface);font:500 14px/20px var(--font)}
+.fx-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-top:1px solid var(--md-outline-variant)}
+.fx-list li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--md-outline-variant);font-size:13px;line-height:18px;color:var(--md-on-surface-variant)}
+.fx-list li b{color:var(--md-on-surface);font-weight:500}
+.fx-list li.viv{background:color-mix(in srgb,var(--md-primary) 7%,transparent);margin:0 -8px;padding-left:8px;padding-right:8px}
+.fx-uso{display:flex;gap:4px}
+.k{width:20px;height:20px;border-radius:4px;display:inline-grid;place-items:center;font:500 11px/1 var(--mono);vertical-align:-5px;margin:0 2px 0 8px}
+.fx-uso .k{margin:0}
+.k.reg{background:var(--md-on-surface);color:var(--md-surface)}
+.k.sit{border:1.5px solid var(--md-on-surface);color:var(--md-on-surface)}
+.k.no{border:1px dashed var(--md-outline);color:var(--md-outline)}
+.k.off{opacity:0}
+.fx-tag{font:500 10px/14px var(--mono);letter-spacing:.4px;padding:1px 6px;border-radius:10px;white-space:nowrap}
+.fx-tag.c{background:color-mix(in srgb,var(--viz-3) 22%,transparent);color:#7fdcb5}
+.fx-tag.d{background:color-mix(in srgb,var(--viz-1) 22%,transparent);color:#aac7ff}
+.fx-tag.s{background:color-mix(in srgb,var(--viz-2) 22%,transparent);color:#ffb59a}
+.fx-key{font-size:12px;line-height:24px;color:var(--md-on-surface-variant);margin:2px 0 0}
+.fx-key .fx-tag{margin-left:8px}
+.legend .sq{width:10px;height:10px;display:inline-block;margin-right:6px;border:2px solid var(--md-on-surface);vertical-align:0}
+.viv h4{margin-bottom:4px}
+@media (max-width:1000px){.fx-grid{grid-template-columns:1fr}.fx-arrow{transform:rotate(90deg);height:24px}}
+@media (max-width:520px){.fx{padding:16px}.fx-casa{grid-template-columns:1fr}}
+
+.px-title-long{font-size:46px;line-height:44px}.px-title-long span{display:block;white-space:nowrap}
+@media (max-width:1000px){.px-title-long{font-size:34px;line-height:34px}}
+@media (max-width:639px){.px-title-long{font-size:34px;line-height:34px}}
 .px-wrap{padding:0;max-width:none}
 .px-wrap .px-banner{border-radius:0;box-shadow:none;border-bottom:1px solid #1f1f22}
 @media (min-width:1241px){.px-wrap .px-copy{padding-left:calc((100vw - 1208px)/2)}.px-wrap .px-src{left:calc((100vw - 1208px)/2)}}
@@ -130,7 +173,7 @@ body{background:#000}
   </nav>
   <a class="icon-btn" href="https://github.com/fjreboll/doppelganger-doble" aria-label="Código en GitHub"><span class="material-symbols-outlined">code</span></a>
   <div class="menu-panel" id="menu-panel">
-    <a href="https://fjreboll.github.io/doppelganger-doble/" aria-current="page"><span class="material-symbols-outlined">difference</span><span>A · Registro de divergencias</span><small>DOBLE: gemelo sintético de 559.440 hogares</small></a>
+    <a href="https://fjreboll.github.io/doppelganger-doble/" aria-current="page"><span class="material-symbols-outlined">difference</span><span>A · Registro de divergencias</span><small>Santiago Gemelo Digital: 559.440 hogares sintéticos</small></a>
     <a href="https://fjreboll.github.io/doppelganger-encargo/"><span class="material-symbols-outlined">hub</span><span>C · Grafo del encargo SITIA</span><small>Actores, vínculos y ausencias del programa</small></a>
   </div>
 </header>
@@ -152,7 +195,7 @@ body{background:#000}
     </div>
     <div class="px-copy">
       <p class="px-kicker">Prueba A · registro de divergencias</p>
-      <h2 class="px-title" id="px-title">DOBLE</h2>
+      <h2 class="px-title px-title-long" id="px-title"><span>Santiago</span> <span>Gemelo Digital</span></h2>
       <p class="px-sub">Lo que el registro ve y lo que la vida hace, hogar por hogar.</p>
       <div class="px-counter" aria-live="off"><span class="px-mes">MES 00</span><span><span class="px-total">0</span> hogares divergen</span></div>
       <div class="px-bar" aria-hidden="true"><i></i></div>
@@ -181,8 +224,54 @@ body{background:#000}
 
 <div class="wrap"><div class="grid g-4" id="stats" style="margin:24px 0 16px"></div></div>
 
+<section class="wrap" id="hogar">
+  <div class="sec-head"><div><span class="overline">01 · El hogar</span><h2 class="headline-s">Qué hace a un hogar y qué mira la regla</h2><p class="body-m muted" style="margin-top:4px">Casa o departamento es parte del hogar sintético, pero la regla nunca lo lee.</p></div></div>
+  <div class="card fx">
+    <div class="fx-grid">
+      <div class="fx-col">
+        <h3 class="fx-h"><span class="fx-n">1</span>Fuentes</h3>
+        <div class="fx-src"><b>Censo 2024</b><span>márgenes por comuna: fijan cuántos hogares hay y cómo se reparten</span></div>
+        <div class="fx-src"><b>CASEN 2022</b><span>hogares donantes: aportan ingresos, personas y vivienda (±5% de ruido)</span></div>
+        <div class="fx-src sim"><b>Simulación 24 meses</b><span>empleo, informalidad, nacimientos, salidas y mudanzas</span></div>
+      </div>
+      <div class="fx-arrow" aria-hidden="true"><span class="material-symbols-outlined">arrow_forward</span></div>
+      <div class="fx-col wide">
+        <h3 class="fx-h"><span class="fx-n">2</span>Factores del hogar sintético</h3>
+        <div class="fx-casa">
+          <div class="fx-tipo"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5 5 1.5 9 5V9H1Z"/></svg><b>Casa</b><span>aislada o pareada · CASEN v1 1–3</span></div>
+          <div class="fx-tipo"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1h5v8h-5Z"/><path d="M3.8 2.5h.9v.9h-.9ZM5.3 2.5h.9v.9h-.9ZM3.8 4.3h.9v.9h-.9ZM5.3 4.3h.9v.9h-.9ZM3.8 6.1h.9v.9h-.9ZM5.3 6.1h.9v.9h-.9Z" class="w"/></svg><b>Departamento</b><span>con o sin ascensor · CASEN v1 4–5</span></div>
+        </div>
+        <ul class="fx-list" id="fx-factores"></ul>
+        <p class="fx-key"><span class="k reg">R</span> lo lee el registro <span class="k sit">S</span> lo lee la vida situada <span class="k no">—</span> ninguna de las dos lecturas lo usa <span class="fx-tag c">Censo</span> calibrado <span class="fx-tag d">CASEN</span> heredado</p>
+      </div>
+      <div class="fx-arrow" aria-hidden="true"><span class="material-symbols-outlined">arrow_forward</span></div>
+      <div class="fx-col">
+        <h3 class="fx-h"><span class="fx-n">3</span>Clasificación</h3>
+        <div class="fx-rule reg"><b>Registro</b>
+          <code>(formal prom. 12 m + pensiones + subsidios + otros registrables) ÷ personas registradas<sup>0,7</sup></code>
+          <span>→ percentil en CASEN 2022 nacional → bajo p40: <b>prioriza</b></span></div>
+        <div class="fx-rule sit"><b>Vida situada</b>
+          <code>(todos los ingresos del mes, también informales) ÷ personas reales<sup>0,7</sup></code>
+          <span>→ bajo p40 <b>y</b> sigue viviendo en la comuna: <b>elegible</b></span></div>
+        <div class="fx-rule out"><b>Si no coinciden</b><span>entra al registro de divergencias con sus seis campos</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card chart-card" style="margin-top:16px">
+    <header><div><h3 class="title-m">Casas y departamentos ante la regla, al mes 24</h3><p class="body-m muted">Tipo de vivienda del donante CASEN. El registro no lo usa; las diferencias vienen del ingreso y la composición.</p></div>
+    <button class="btn text" data-table="t-viv"><span class="material-symbols-outlined">table</span>Tabla</button></header>
+    <div class="legend"><span><span class="dot" style="background:var(--md-on-surface)"></span>Casa</span><span><span class="sq"></span>Departamento</span></div>
+    <div class="minis viv">
+      <div><h4 class="title-s">Priorizados por el registro</h4><svg class="chart-svg" id="c-viv-p" role="img" aria-label="Porcentaje de hogares priorizados por tipo de vivienda y comuna"></svg></div>
+      <div><h4 class="title-s">Divergen de la vida situada</h4><svg class="chart-svg" id="c-viv-d" role="img" aria-label="Porcentaje de hogares con divergencia por tipo de vivienda y comuna"></svg></div>
+    </div>
+    <div class="tablewrap scroll-x" id="t-viv"></div>
+    <div class="insight"><span class="material-symbols-outlined">lightbulb</span><p class="body-m" id="ins-viv"></p></div>
+  </div>
+</section>
+
 <section class="wrap" id="costura">
-  <div class="sec-head"><div><span class="overline">01 · La costura</span><h2 class="headline-s">Junto al umbral, el sistema casi adivina</h2></div></div>
+  <div class="sec-head"><div><span class="overline">02 · La costura</span><h2 class="headline-s">Junto al umbral, el sistema casi adivina</h2></div></div>
   <div class="card chart-card">
     <header><div><h3 class="title-m">Acierto del registro según su percentil</h3><p class="body-m muted">CASEN 2022, nacional.</p></div>
     <button class="btn text" data-table="t-conf"><span class="material-symbols-outlined">table</span>Tabla</button></header>
@@ -199,7 +288,7 @@ body{background:#000}
 </div></div>
 
 <section class="wrap" id="cien">
-  <div class="sec-head"><div><span class="overline">02 · Magnitud</span><h2 class="headline-s">De cada 100 hogares, al mes 24</h2></div></div>
+  <div class="sec-head"><div><span class="overline">03 · Magnitud</span><h2 class="headline-s">De cada 100 hogares, al mes 24</h2></div></div>
   <div class="card chart-card">
     <header><div><h3 class="title-m">Coinciden o divergen</h3><p class="body-m muted">Un cuadro = un hogar.</p></div>
     <button class="btn text" data-table="t-waffle"><span class="material-symbols-outlined">table</span>Tabla</button></header>
@@ -210,7 +299,7 @@ body{background:#000}
 </section>
 
 <section class="wrap" id="tiempo">
-  <div class="sec-head"><div><span class="overline">03 · Divergencia sin escena</span><h2 class="headline-s">La brecha crece en silencio</h2></div></div>
+  <div class="sec-head"><div><span class="overline">04 · Divergencia sin escena</span><h2 class="headline-s">La brecha crece en silencio</h2></div></div>
   <div class="card chart-card">
     <header><div><h3 class="title-m">Hogares con divergencia, mes a mes</h3><p class="body-m muted">La vida cambia; el registro se entera tarde o nunca.</p></div>
     <button class="btn text" data-table="t-serie"><span class="material-symbols-outlined">table</span>Tabla</button></header>
@@ -222,7 +311,7 @@ body{background:#000}
 <section class="wrap" id="brecha">
   <div class="grid g-2">
     <div class="card chart-card">
-      <header><div><span class="overline">04 · Tres lecturas</span><h3 class="title-m" style="margin-top:4px">Registro simulado, RSH real y vida situada</h3></div>
+      <header><div><span class="overline">05 · Tres lecturas</span><h3 class="title-m" style="margin-top:4px">Registro simulado, RSH real y vida situada</h3></div>
       <button class="btn text" data-table="t-dumb"><span class="material-symbols-outlined">table</span>Tabla</button></header>
       <div class="legend"><span><span class="dot" style="background:var(--md-on-surface)"></span>Registro</span><span><span class="dot" style="border:2px solid var(--md-on-surface);width:10px;height:10px"></span>Situado</span><span><span class="dia"></span>RSH 2023 (tramo 40%)</span></div>
       <svg class="chart-svg" id="c-dumb" role="img" aria-label="Registro simulado, RSH 2023 y vida situada por comuna"></svg>
@@ -230,7 +319,7 @@ body{background:#000}
       <div class="tablewrap scroll-x" id="t-dumb"></div>
     </div>
     <div class="card chart-card">
-      <header><div><span class="overline">05 · Origen</span><h3 class="title-m" style="margin-top:4px">Dónde nace cada divergencia</h3></div>
+      <header><div><span class="overline">06 · Origen</span><h3 class="title-m" style="margin-top:4px">Dónde nace cada divergencia</h3></div>
       <button class="btn text" data-table="t-locus"><span class="material-symbols-outlined">table</span>Tabla</button></header>
       <div class="legend" id="lg-locus"></div>
       <svg class="chart-svg" id="c-locus" role="img" aria-label="Entradas del registro por tipología y locus"></svg>
@@ -240,14 +329,14 @@ body{background:#000}
 </section>
 
 <section class="wrap" id="registro">
-  <div class="sec-head"><div><span class="overline">06 · El registro</span><h2 class="headline-s">Entradas del registro</h2><p class="body-m muted" style="margin-top:4px">Seis campos por caso. La costura, en rojo.</p></div>
+  <div class="sec-head"><div><span class="overline">07 · El registro</span><h2 class="headline-s">Entradas del registro</h2><p class="body-m muted" style="margin-top:4px">Seis campos por caso. La costura, en rojo.</p></div>
   <div class="chip-set" id="chips-tipo"></div></div>
   <div class="grid g-3" id="casos"></div>
   <div style="text-align:center;margin-top:16px"><button class="btn tonal" id="mas-casos"><span class="material-symbols-outlined">expand_more</span><span class="n">Ver más</span></button></div>
 </section>
 
 <section class="wrap" id="metodo">
-  <div class="sec-head"><div><span class="overline">07 · Método</span><h2 class="headline-s">Cómo se hizo y cómo se audita</h2></div></div>
+  <div class="sec-head"><div><span class="overline">08 · Método</span><h2 class="headline-s">Cómo se hizo y cómo se audita</h2></div></div>
   <div class="stepper">
     <div class="step"><h4 class="title-s">Ingesta</h4><p class="body-s muted">Fuentes con procedencia: Censo 2024, CASEN 2022, RSH 2023.</p></div>
     <div class="step"><h4 class="title-s">Calibración</h4><p class="body-s muted">Un hogar sintético por hogar censado.</p></div>

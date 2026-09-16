@@ -1,4 +1,4 @@
-# DOBLE · Registro público de divergencias (Doppelganger A)
+# Santiago Gemelo Digital · Registro público de divergencias (Doppelgänger A)
 
 **Sitio:** https://fjreboll.github.io/doppelganger-doble/ · **Par:** [Grafo del encargo (C)](https://fjreboll.github.io/doppelganger-encargo/)
 
@@ -12,6 +12,7 @@ Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (D
 |---|---|
 | `index.html`, `app.js` | Interfaz (Material Design 3; visualizaciones D3 con paleta validada para daltonismo) |
 | `banner.js`, `assets/banner_grid.json` | Banner pixel art: mapa de la RM rasterizado (300×116 celdas escritorio, 120×122 móvil). Las celdas de las cuatro comunas cambian de estado mes a mes; casas y edificios se dibujan en proporción a la tipología de vivienda del Censo 2024 y su techo toma el color del estado |
+| Sección 01 · El hogar | Diagrama de factores del hogar sintético (qué calibra el Censo, qué hereda el donante CASEN, qué lee el registro y qué la vida situada) y comparación casas/departamentos al mes 24, generada con `pipeline/src/13_vivienda_clasificacion.py` (tipo de vivienda CASEN v1 del donante; contraste holdout con Censo 2024 V5) |
 | `data.json` | Datos exportados desde la base común `doppelganger.db` |
 | `assets/` | Hoja de estilo M3, D3 v7 y tipografías auto-alojadas (Roboto Flex, Roboto Mono, Material Symbols) |
 | `pipeline/` | Código reproducible: ingesta, calibración, simulación, grafo, validación y exportación |

@@ -1,4 +1,4 @@
-/* DOBLE · dashboard infográfico (Material 3 + método dataviz) */
+/* Santiago Gemelo Digital · dashboard infográfico (Material 3 + método dataviz) */
 (async function () {
   const D = await (await fetch('data.json')).json();
   const $ = s => document.querySelector(s);
@@ -207,8 +207,56 @@
   $('#fuentes').innerHTML = `<table class="data"><thead><tr><th>Fuente</th><th>Año</th><th>Acceso</th><th>Plano</th><th>Homologación</th></tr></thead><tbody>${D.fuentes.map(f => `<tr><td>${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.nombre)}</a>` : esc(f.nombre)}<div class="body-s muted">${esc(f.institucion)}</div></td><td>${esc(f.anio_referencia)}</td><td class="body-s" style="font-family:var(--mono)">${esc(f.via_acceso)}</td><td><span class="badge ${f.plano_evidencia === 'documentado' ? 'pri' : 'err'}">${esc(f.plano_evidencia)}</span></td><td class="body-s muted">${esc(f.nota_homologacion)}</td></tr>`).join('')}</tbody></table>`;
 
   $('#mas-casos').onclick = () => { verCasos += 6; renderCasos(); };
+
+  /* ── 01 hogar: factores y casas/departamentos ── */
+  const FACT = [
+    ['Comuna de residencia', 'c', ['sit'], 'el registro usa el domicilio registrado; la vida situada exige seguir viviendo ahí'],
+    ['Número de hogares', 'c', ['no'], 'fija cuántos hogares sintéticos hay (559.440)'],
+    ['Personas por tramo de edad (5)', 'c', ['no'], 'calibración demográfica'],
+    ['Tenencia de la vivienda', 'c', ['no'], 'propia · arrendada · cedida · irregular'],
+    ['Tipo de vivienda', 'd', ['no'], 'casa · departamento · otra', 'viv'],
+    ['Hacinamiento', 'd', ['no'], 'solo para validar contra Censo'],
+    ['Personas del hogar', 'd', ['reg', 'sit'], 'registro: declaradas, se actualizan con rezago'],
+    ['Ingreso formal (cotización o boleta)', 'd', ['reg', 'sit'], 'registro: promedio de 12 meses'],
+    ['Pensiones, subsidios y otros registrables', 'd', ['reg', 'sit'], ''],
+    ['Ingreso informal y otros no registrables', 'd', ['sit'], 'invisible para el registro'],
+    ['Eventos de 24 meses', 's', ['sit'], 'el registro los ve tarde o nunca']
+  ];
+  $('#fx-factores').innerHTML = FACT.map(([n, o, uso, nota, cls]) => `<li class="${cls || ''}"><span><b>${n}</b>${nota ? `<br><span>${nota}</span>` : ''}</span><span class="fx-tag ${o}">${{ c: 'Censo', d: 'CASEN', s: 'Simulación' }[o]}</span><span class="fx-uso" aria-label="${uso.includes('no') ? 'no se usa en la clasificación' : 'lo usa: ' + uso.map(u => u === 'reg' ? 'registro' : 'vida situada').join(' y ')}">${['reg', 'sit'].map(u => uso.includes('no') ? (u === 'sit' ? '<span class="k no">—</span>' : '<span class="k off"></span>') : `<span class="k ${uso.includes(u) ? u : 'off'}">${u === 'reg' ? 'R' : 'S'}</span>`).join('')}</span></li>`).join('');
+
+  function renderViv() {
+    const V = D.vivienda_clasificacion; if (!V) return;
+    const ink = css('--md-on-surface'), surf = css('--md-surface-container-lowest');
+    const dibujar = (id, campo, max) => {
+      const svg = d3.select(id), W = width(svg.node()), rowH = 44, m = { t: 6, r: 16, b: 28, l: 92 }, H = m.t + m.b + rowH * COMUNAS.length;
+      svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).selectAll('*').remove();
+      const x = d3.scaleLinear().domain([0, max]).range([m.l, W - m.r]), y = d3.scaleBand().domain(COMUNAS).range([m.t, H - m.b]);
+      svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(4).tickSize(-(H - m.t - m.b)).tickFormat(''));
+      svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(4).tickFormat(d => Math.round(d * 100) + '%').tickSizeOuter(0));
+      COMUNAS.forEach(c => {
+        const f = V[c], cy = y(c) + y.bandwidth() / 2, a = f.casa?.[campo], b = f.departamento?.[campo];
+        const g = svg.append('g').attr('class', 'mark-hover');
+        g.append('text').attr('x', m.l - 12).attr('y', cy + 4).attr('text-anchor', 'end').attr('font-size', 14).attr('fill', ink).text(c);
+        if (a != null && b != null) g.append('line').attr('x1', x(Math.min(a, b))).attr('x2', x(Math.max(a, b))).attr('y1', cy).attr('y2', cy).attr('stroke', css('--viz-axis')).attr('stroke-width', 2);
+        if (b != null) g.append('rect').attr('x', x(b) - 5.5).attr('y', cy - 5.5).attr('width', 11).attr('height', 11).attr('rx', 1.5).attr('fill', surf).attr('stroke', ink).attr('stroke-width', 2);
+        if (a != null) g.append('circle').attr('cx', x(a)).attr('cy', cy).attr('r', 6).attr('fill', ink).attr('stroke', surf).attr('stroke-width', 2);
+        const fila = t => f[t] ? `<div class="row"><span>${t === 'casa' ? 'Casas' : 'Departamentos'} (${nf.format(f[t].hogares)})</span><b>${pct(f[t][campo])}</b></div>` : '';
+        g.append('rect').attr('x', m.l).attr('y', y(c)).attr('width', W - m.l - m.r).attr('height', y.bandwidth()).attr('fill', 'transparent')
+          .on('pointermove', e => showTT(e, `<div class="tt-sub">${c}</div>${fila('casa')}${fila('departamento')}<div class="body-s" style="margin-top:6px">Mezcla sintética casa/depto: ${pct(f.casa?.share_sintetico ?? 0, 0)} / ${pct(f.departamento?.share_sintetico ?? 0, 0)} · Censo 2024: ${pct(f.casa?.share_censo ?? 0, 0)} / ${pct(f.departamento?.share_censo ?? 0, 0)}</div>`)).on('pointerleave', hideTT);
+      });
+    };
+    const todos = COMUNAS.flatMap(c => Object.values(V[c]));
+    dibujar('#c-viv-p', 'priorizados', Math.max(.7, d3.max(todos, d => d.priorizados)));
+    dibujar('#c-viv-d', 'divergencia', Math.max(.4, d3.max(COMUNAS.flatMap(c => ['casa', 'departamento'].map(t => V[c][t]?.divergencia || 0)))));
+    const NOM = { casa: 'Casa', departamento: 'Departamento', otra: 'Otra' };
+    table('t-viv', ['Comuna', 'Tipo', 'Hogares', 'Mezcla sintética', 'Censo 2024', 'Priorizados', 'Divergen', 'Falso positivo', 'Falso negativo', 'Desactualizada'],
+      COMUNAS.flatMap(c => Object.entries(V[c]).map(([t, f]) => [c, NOM[t], nf.format(f.hogares), pct(f.share_sintetico), pct(f.share_censo), pct(f.priorizados), pct(f.divergencia), pct(f.falso_positivo), pct(f.falso_negativo), pct(f.desactualizada)])));
+    const s = V['Santiago'], p = V['Puente Alto'];
+    $('#ins-viv').innerHTML = `Mismo criterio, resultados distintos: en Santiago el registro prioriza ${pct(s.casa.priorizados, 0)} de las casas y ${pct(s.departamento.priorizados, 0)} de los departamentos; en Puente Alto se invierte (${pct(p.casa.priorizados, 0)} y ${pct(p.departamento.priorizados, 0)}). La vivienda no entra a la regla, pero viaja con el ingreso.`;
+  }
+
   function renderFiltered() { renderWaffle(); renderSerie(); renderDumb(); renderLocus(); renderCasos(); }
-  function renderAll() { renderConf(); renderFiltered(); }
+  function renderAll() { renderViv(); renderConf(); renderFiltered(); }
   renderAll();
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
 })();

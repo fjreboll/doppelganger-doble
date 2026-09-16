@@ -1,4 +1,4 @@
-/* DOBLE · banner pixel art: las cuatro comunas del gemelo, celda a celda, mes a mes */
+/* Santiago Gemelo Digital · banner pixel art: las cuatro comunas del gemelo, celda a celda, mes a mes */
 (async function () {
   const root = document.getElementById('banner');
   if (!root) return;
