@@ -40,6 +40,10 @@ Cada fuente lleva su verificación: las bases públicas se leyeron desde espejos
 - Red vial OpenStreetMap (© colaboradores OSM, ODbL) para el banner del sitio C: `pipeline/src/11_calles_osm.js` (Overpass, 2026-09-16) y `12_integrar_calles.py`
 - Tipografías pixel: Pixelify Sans y VT323 (SIL Open Font License), auto-alojadas
 
+## Sensibilidad
+
+`pipeline/src/14_sensibilidad.py` separa lo que es dato de lo que es simulación. La curva de confianza se recalcula sobre CASEN 2022 con tres escalas de equivalencia y tres umbrales: en las nueve configuraciones el mínimo cae en el vigintil del umbral o el contiguo (24%–48% de acierto). Las tasas de divergencia se recalculan con tres escenarios de informalidad por tres semillas: la divergencia total se mueve entre 22,9% y 23,6% y el orden entre comunas no cambia. En la población sintética el acierto junto al umbral (45%–52%) es mayor que en la CASEN real (32%–39%): el modelo es conservador. Resultados en `pipeline/salidas/` y lectura completa en `ANEXO_sensibilidad.md`.
+
 ## Límites declarados
 
 Nueve de diez parámetros de deriva son supuestos; tipologías cubiertas 4 de 7; la prueba de hacinamiento crítico en Santiago falla (2,8% sintético vs 5,4% Censo) y se mantiene visible. El RSH real (SINIM) cuenta solo hogares inscritos y su etiqueta dice «total regional» aunque los tramos suman 100% por comuna: queda en el autorregistro. Detalle completo en la sección Método del sitio y en `pipeline/README.md`.

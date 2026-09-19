@@ -1,0 +1,283 @@
+{
+ "generado": "2026-09-19",
+ "confianza_casen": {
+  "descripcion": "P(clasificación situada = registrada | vigintil del registro), CASEN 2022 expandida; dato real, no simulado",
+  "franja_sobre_umbral": {
+   "min": 0.2366,
+   "max": 0.5668
+  },
+  "base_esc07_p40": {
+   "escala": 0.7,
+   "umbral": 40.0,
+   "conf_franja_min": 0.3178,
+   "conf_franja_max": 0.3925,
+   "conf_extremo_bajo": 1.0,
+   "conf_extremo_alto": 1.0,
+   "conf_media": 0.789,
+   "vigintil_minimo": 8,
+   "conf_minima": 0.3178
+  },
+  "rejilla": [
+   {
+    "escala": 0.5,
+    "umbral": 30.0,
+    "conf_franja_min": 0.4036,
+    "conf_franja_max": 0.4791,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.7953,
+    "vigintil_minimo": 6,
+    "conf_minima": 0.4036
+   },
+   {
+    "escala": 0.5,
+    "umbral": 40.0,
+    "conf_franja_min": 0.3316,
+    "conf_franja_max": 0.4554,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.8026,
+    "vigintil_minimo": 8,
+    "conf_minima": 0.3316
+   },
+   {
+    "escala": 0.5,
+    "umbral": 50.0,
+    "conf_franja_min": 0.3436,
+    "conf_franja_max": 0.4678,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.8304,
+    "vigintil_minimo": 10,
+    "conf_minima": 0.3436
+   },
+   {
+    "escala": 0.7,
+    "umbral": 30.0,
+    "conf_franja_min": 0.4833,
+    "conf_franja_max": 0.4965,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.7966,
+    "vigintil_minimo": 7,
+    "conf_minima": 0.4833
+   },
+   {
+    "escala": 0.7,
+    "umbral": 40.0,
+    "conf_franja_min": 0.3178,
+    "conf_franja_max": 0.3925,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.789,
+    "vigintil_minimo": 8,
+    "conf_minima": 0.3178
+   },
+   {
+    "escala": 0.7,
+    "umbral": 50.0,
+    "conf_franja_min": 0.3237,
+    "conf_franja_max": 0.4506,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.8212,
+    "vigintil_minimo": 10,
+    "conf_minima": 0.3237
+   },
+   {
+    "escala": 1.0,
+    "umbral": 30.0,
+    "conf_franja_min": 0.3396,
+    "conf_franja_max": 0.5668,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.805,
+    "vigintil_minimo": 6,
+    "conf_minima": 0.3396
+   },
+   {
+    "escala": 1.0,
+    "umbral": 40.0,
+    "conf_franja_min": 0.431,
+    "conf_franja_max": 0.4991,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.7984,
+    "vigintil_minimo": 9,
+    "conf_minima": 0.431
+   },
+   {
+    "escala": 1.0,
+    "umbral": 50.0,
+    "conf_franja_min": 0.2366,
+    "conf_franja_max": 0.3492,
+    "conf_extremo_bajo": 1.0,
+    "conf_extremo_alto": 1.0,
+    "conf_media": 0.7984,
+    "vigintil_minimo": 10,
+    "conf_minima": 0.2366
+   }
+  ]
+ },
+ "divergencia_simulada": {
+  "descripcion": "Divergencia al mes 24 bajo tres escenarios de informalidad y tres semillas",
+  "rango_total": [
+   0.22896110396110397,
+   0.23647933647933647
+  ],
+  "por_escenario": {
+   "base": {
+    "media": 0.23311287477954146,
+    "min": 0.23244136994136994,
+    "max": 0.23353532103532104
+   },
+   "informalidad_alta": {
+    "media": 0.23605689022355691,
+    "min": 0.235476547976548,
+    "max": 0.23647933647933647
+   },
+   "informalidad_baja": {
+    "media": 0.229691596358263,
+    "min": 0.22896110396110397,
+    "max": 0.2301980551980552
+   }
+  },
+  "por_comuna_rango": {
+   "Santiago": [
+    0.2476,
+    0.2555
+   ],
+   "La Pintana": [
+    0.2952,
+    0.304
+   ],
+   "Las Condes": [
+    0.1543,
+    0.1583
+   ],
+   "Puente Alto": [
+    0.2357,
+    0.2456
+   ]
+  },
+  "corridas": [
+   {
+    "escenario": "informalidad_baja",
+    "semilla": 20260916,
+    "divergencia": 0.22896110396110397,
+    "falso_positivo": 0.13813635063635063,
+    "falso_negativo": 0.09082475332475333,
+    "div_La Pintana": 0.2955,
+    "div_Las Condes": 0.1543,
+    "div_Puente Alto": 0.2357,
+    "div_Santiago": 0.2476,
+    "conf_sim_p40_p45": 0.4581,
+    "conf_sim_p45_p50": 0.4693
+   },
+   {
+    "escenario": "informalidad_baja",
+    "semilla": 20261016,
+    "divergencia": 0.22991562991562992,
+    "falso_positivo": 0.13857786357786359,
+    "falso_negativo": 0.09133776633776634,
+    "div_La Pintana": 0.296,
+    "div_Las Condes": 0.1555,
+    "div_Puente Alto": 0.2359,
+    "div_Santiago": 0.2492,
+    "conf_sim_p40_p45": 0.4568,
+    "conf_sim_p45_p50": 0.4695
+   },
+   {
+    "escenario": "informalidad_baja",
+    "semilla": 20261117,
+    "divergencia": 0.2301980551980552,
+    "falso_positivo": 0.1388120263120263,
+    "falso_negativo": 0.09138602888602888,
+    "div_La Pintana": 0.2952,
+    "div_Las Condes": 0.1562,
+    "div_Puente Alto": 0.2365,
+    "div_Santiago": 0.2493,
+    "conf_sim_p40_p45": 0.4531,
+    "conf_sim_p45_p50": 0.4691
+   },
+   {
+    "escenario": "base",
+    "semilla": 20260916,
+    "divergencia": 0.23244136994136994,
+    "falso_positivo": 0.14592628342628342,
+    "falso_negativo": 0.08651508651508652,
+    "div_La Pintana": 0.2989,
+    "div_Las Condes": 0.1567,
+    "div_Puente Alto": 0.2399,
+    "div_Santiago": 0.2511,
+    "conf_sim_p40_p45": 0.473,
+    "conf_sim_p45_p50": 0.4889
+   },
+   {
+    "escenario": "base",
+    "semilla": 20261016,
+    "divergencia": 0.23336193336193337,
+    "falso_positivo": 0.14624803374803375,
+    "falso_negativo": 0.08711389961389962,
+    "div_La Pintana": 0.2991,
+    "div_Las Condes": 0.1574,
+    "div_Puente Alto": 0.2403,
+    "div_Santiago": 0.2528,
+    "conf_sim_p40_p45": 0.4703,
+    "conf_sim_p45_p50": 0.4886
+   },
+   {
+    "escenario": "base",
+    "semilla": 20261117,
+    "divergencia": 0.23353532103532104,
+    "falso_positivo": 0.14655190905190904,
+    "falso_negativo": 0.08698341198341199,
+    "div_La Pintana": 0.298,
+    "div_Las Condes": 0.1583,
+    "div_Puente Alto": 0.2408,
+    "div_Santiago": 0.2526,
+    "conf_sim_p40_p45": 0.4668,
+    "conf_sim_p45_p50": 0.4893
+   },
+   {
+    "escenario": "informalidad_alta",
+    "semilla": 20260916,
+    "divergencia": 0.235476547976548,
+    "falso_positivo": 0.15373587873587874,
+    "falso_negativo": 0.08174066924066924,
+    "div_La Pintana": 0.3036,
+    "div_Las Condes": 0.1565,
+    "div_Puente Alto": 0.244,
+    "div_Santiago": 0.2545,
+    "conf_sim_p40_p45": 0.4931,
+    "conf_sim_p45_p50": 0.5155
+   },
+   {
+    "escenario": "informalidad_alta",
+    "semilla": 20261016,
+    "divergencia": 0.23621478621478623,
+    "falso_positivo": 0.1541899041899042,
+    "falso_negativo": 0.08202488202488202,
+    "div_La Pintana": 0.304,
+    "div_Las Condes": 0.157,
+    "div_Puente Alto": 0.2448,
+    "div_Santiago": 0.2555,
+    "conf_sim_p40_p45": 0.4898,
+    "conf_sim_p45_p50": 0.5151
+   },
+   {
+    "escenario": "informalidad_alta",
+    "semilla": 20261117,
+    "divergencia": 0.23647933647933647,
+    "falso_positivo": 0.15437580437580437,
+    "falso_negativo": 0.0821035321035321,
+    "div_La Pintana": 0.3027,
+    "div_Las Condes": 0.1583,
+    "div_Puente Alto": 0.2456,
+    "div_Santiago": 0.2551,
+    "conf_sim_p40_p45": 0.4864,
+    "conf_sim_p45_p50": 0.5162
+   }
+  ]
+ }
+}
