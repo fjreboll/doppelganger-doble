@@ -13,7 +13,7 @@ GEO = Path(sys.argv[1] if len(sys.argv) > 1 else "/home/claude/src/chile-geojson
 OUT = Path(sys.argv[2] if len(sys.argv) > 2 else Path(__file__).resolve().parents[2] / "assets" / "banner_grid_sitia.json")
 PILOTO = {13108: "Independencia", 13117: "Lo Prado", 13101: "Santiago", 13122: "Peñalolén", 13129: "San Joaquín", 13132: "Vitacura",
           13124: "Pudahuel", 13107: "Huechuraba", 13115: "Lo Barnechea", 13121: "Pedro Aguirre Cerda", 13113: "La Reina", 13119: "Maipú"}
-K = math.cos(math.radians(33.5))
+K = math.cos(math.radians(33.5))  # encuadre: Santiago urbano (Pudahuel/Maipú al poniente, sector oriente hasta el límite urbano, Puente Alto al sur)
 
 fc = json.loads(GEO.read_text())["features"]
 comunas = []
@@ -55,8 +55,8 @@ out = dict(
     fuente="Límites comunales Región Metropolitana · BCN (espejo github.com/caracena/chile-geojson@92332f8)",
     alfabeto="0ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789+/",
     comunas=[dict(i=i, cod=c["cod"], nombre=c["nombre"], piloto=c["cod"] in PILOTO) for i, c in enumerate(comunas, start=1)],
-    escritorio=grilla(-71.30, -70.22, -33.62, -33.27, 300),
-    movil=grilla(-70.86, -70.42, -33.62, -33.28, 120),
+    escritorio=grilla(-70.92, -70.42, -33.66, -33.33, 300),
+    movil=grilla(-70.92, -70.42, -33.66, -33.33, 140),
 )
 OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))

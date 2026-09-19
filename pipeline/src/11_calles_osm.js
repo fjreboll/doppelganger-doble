@@ -1,12 +1,12 @@
 /* 11 · Calles OSM para el banner del sitio C (se ejecuta en la consola de un navegador con acceso a overpass-api.de).
    Consulta: vías highway motorway/trunk(+link), primary, secondary, tertiary en el bbox del banner.
-   Base OSM usada: 2026-09-16T12:52:49Z (© colaboradores de OpenStreetMap, ODbL).
+   Base OSM usada: 2026-09-19T13:20:36Z (© colaboradores de OpenStreetMap, ODbL).
    Salida: filas RLE por grilla (letra A–E = clase 0–4, largo en base36) + hash por fila (mod 997) para verificar la copia.
    Las filas se guardan en pipeline/data/osm/calles_rle_{escritorio,movil}.txt y 12_integrar_calles.py las inserta en banner_grid_sitia.json. */
-const q = `[out:json][timeout:120];way["highway"~"^(motorway|trunk|primary|secondary|tertiary|motorway_link|trunk_link)$"](-33.70,-71.32,-33.25,-70.20);out geom;`;
+const q = `[out:json][timeout:120];way["highway"~"^(motorway|trunk|primary|secondary|motorway_link|trunk_link)$"](-33.67,-70.94,-33.32,-70.40);out geom;`;
 const ways = (await (await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(q) })).json()).elements;
-const CL = { motorway: 1, motorway_link: 1, trunk: 1, trunk_link: 1, primary: 2, secondary: 3, tertiary: 4 };
-const grids = { escritorio: { cols: 300, rows: 117, bbox: [-71.3, -33.62, -70.22, -33.27] }, movil: { cols: 120, rows: 111, bbox: [-70.86, -33.62, -70.42, -33.28] } };
+const CL = { motorway: 1, motorway_link: 1, trunk: 1, trunk_link: 1, primary: 2, secondary: 3 };
+const grids = { escritorio: { cols: 300, rows: 237, bbox: [-70.92, -33.66, -70.42, -33.33] }, movil: { cols: 140, rows: 111, bbox: [-70.92, -33.66, -70.42, -33.33] } };
 const h = s => { let x = 0; for (const ch of s) x = (x * 31 + ch.charCodeAt(0)) % 997; return x; };
 const salida = {};
 for (const [k, g] of Object.entries(grids)) {

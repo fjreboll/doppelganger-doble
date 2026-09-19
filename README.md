@@ -11,7 +11,7 @@ Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (D
 | Ruta | Contenido |
 |---|---|
 | `index.html`, `app.js` | Interfaz (Material Design 3; visualizaciones D3 con paleta validada para daltonismo) |
-| `banner.js`, `assets/banner_grid.json` | Banner pixel art: mapa de la RM rasterizado (300×116 celdas escritorio, 120×122 móvil). Las celdas de las cuatro comunas cambian de estado mes a mes; casas y edificios se dibujan en proporción a la tipología de vivienda del Censo 2024 y su techo toma el color del estado |
+| `banner.js`, `assets/banner_grid.json` | Banner pixel art: mapa del Santiago urbano rasterizado (300×237 celdas escritorio, 140×111 móvil; encuadre −70,92/−70,42 y −33,66/−33,33: Pudahuel y Maipú al poniente, el sector oriente hasta el límite urbano, Puente Alto al sur). Las celdas de las cuatro comunas cambian de estado mes a mes; casas y edificios se dibujan en proporción a la tipología de vivienda del Censo 2024 y su techo toma el color del estado |
 | Sección 01 · El hogar | Diagrama de factores del hogar sintético (qué calibra el Censo, qué hereda el donante CASEN, qué lee el registro y qué la vida situada) y comparación casas/departamentos al mes 24, generada con `pipeline/src/13_vivienda_clasificacion.py` (tipo de vivienda CASEN v1 del donante; contraste holdout con Censo 2024 V5) |
 | `nav.js` | Navegación compartida con el sitio C: índice de secciones con seguimiento de lectura, barra de progreso, aparición progresiva, enlaces profundos y atajos (`[` `]` secciones, `t` arriba). Clic en una comuna del banner, del gráfico 05 o del de viviendas filtra el tablero; el diagrama del hogar ilumina la lectura que usa cada factor |
 | `data.json` | Datos exportados desde la base común `doppelganger.db` |
@@ -27,6 +27,8 @@ bash pipeline/run_all.sh
 ```
 
 ## Fuentes
+
+Cada fuente lleva su verificación: las bases públicas se leyeron desde espejos de GitHub fijados por commit (el enlace de la columna «Acceso» abre ese commit), porque los portales institucionales no son alcanzables desde el entorno de la POC.
 
 - Encuesta CASEN 2022, microdatos · Ministerio de Desarrollo Social y Familia (vía espejo `bastianolea/casen_comparador_ingresos`)
 - Censo de Población y Vivienda 2024, tabulados comunales D1, D5, H1, V3 · INE (vía espejo `bastianolea/censo_2024`)

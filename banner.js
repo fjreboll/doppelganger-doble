@@ -8,6 +8,7 @@
   const nf = new Intl.NumberFormat('es-CL');
   const pct = x => Math.round(100 * x) + '%';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let ox = 0, oy = 0, escala = 1;
 
   /* paleta de pantalla (fija en ambos temas; pasos oscuros validados para daltonismo) */
   const C = { vacio: '#000000', trama: '#171a20', rm: '#1b1e24', borde: '#2e3139', piloto: '#e2e2e9', coincide: '#4f5563', fp: '#d95926', fn: '#3987e5', doble: '#ff8a80', muro: '#b9bcc6', ventana: '#1b1e24', techo: '#8e9099' };
@@ -70,6 +71,19 @@
       l.classList.remove('flip'); const r = l.getBoundingClientRect();
       if (l.classList.contains('start') && r.right > b.right - 6) { l.classList.replace('start', 'end'); }
       else if (l.classList.contains('end') && r.left < b.left + 6) { l.classList.replace('end', 'start'); }
+      l.style.setProperty('--dy', '0px');
+    });
+    // desplaza en vertical las que aún se pisan
+    const ls = [...root.querySelectorAll('.px-label')];
+    const choca = (a, c) => a.left < c.right && a.right > c.left && a.top < c.bottom && a.bottom > c.top;
+    ls.forEach((l, i) => {
+      for (let intento = 0; intento < 8; intento++) {
+        const r = l.getBoundingClientRect();
+        const golpe = ls.slice(0, i).some(o => choca(r, o.getBoundingClientRect()));
+        if (!golpe) break;
+        const dy = (intento % 2 ? 1 : -1) * Math.ceil((intento + 1) / 2) * (r.height + 4);
+        l.style.setProperty('--dy', dy + 'px');
+      }
     });
   }
   function dibujar() {
@@ -130,9 +144,19 @@
   setInterval(syncRange, 300);
 
   /* tooltip por celda */
+  // el canvas usa object-fit: contain; la capa de etiquetas se ajusta al rectángulo realmente dibujado
+  const capa = root.querySelector('.px-labels');
+  const encuadrar = () => {
+    const b = cv.getBoundingClientRect(); if (!b.width || !grid) return;
+    const esc = Math.min(b.width / grid.cols, b.height / grid.rows), w = grid.cols * esc, h = grid.rows * esc;
+    ox = (b.width - w) / 2; oy = (b.height - h) / 2; escala = esc;
+    const s2 = root.querySelector('.px-stage').getBoundingClientRect();
+    if (capa) { capa.style.left = (b.left - s2.left + ox) + 'px'; capa.style.top = (b.top - s2.top + oy) + 'px'; capa.style.width = w + 'px'; capa.style.height = h + 'px'; capa.style.right = 'auto'; capa.style.bottom = 'auto'; }
+  };
+  const celdaDe = e => { const b = cv.getBoundingClientRect(); return [Math.floor((e.clientX - b.left - ox) / escala), Math.floor((e.clientY - b.top - oy) / escala)]; };
   const tt = document.getElementById('tt');
   cv.addEventListener('pointermove', e => {
-    const b = cv.getBoundingClientRect(), x = Math.floor((e.clientX - b.left) / b.width * grid.cols), y = Math.floor((e.clientY - b.top) / b.height * grid.rows);
+    const [x, y] = celdaDe(e);
     const v = M[y * grid.cols + x], c = porIndice[v];
     if (!c) { tt.classList.remove('on'); return; }
     let html = `<div class="tt-sub">${c.nombre}</div>`;
@@ -148,7 +172,7 @@
   });
   cv.addEventListener('pointerleave', () => tt.classList.remove('on'));
   cv.addEventListener('click', e => {
-    const b = cv.getBoundingClientRect(), x = Math.floor((e.clientX - b.left) / b.width * grid.cols), y = Math.floor((e.clientY - b.top) / b.height * grid.rows);
+    const [x, y] = celdaDe(e);
     const c = porIndice[M[y * grid.cols + x]];
     if (c?.piloto && window.gemelo) { tt.classList.remove('on'); window.gemelo.setComuna(c.nombre); }
   });
@@ -157,10 +181,10 @@
 
   root.querySelectorAll('.px-ico').forEach(icv => { const f = SPR[icv.dataset.ico], c2 = icv.getContext('2d'); c2.fillStyle = C.vacio; c2.fillRect(0, 0, icv.width, icv.height);
     f.forEach((fila, dy) => [...fila].forEach((ch, dx) => { if (ch === '.') return; c2.fillStyle = ch === 'R' ? C.techo : ch === 'W' ? C.muro : C.ventana; c2.fillRect(dx + 1, dy + 1, 1, 1); })); });
-  preparar();
+  preparar(); encuadrar();
   if (reduce) { mes = 24; }
   syncBtn(); dibujar(); syncRange();
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(ajustarEtiquetas));
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(() => { encuadrar(); ajustarEtiquetas(); }));
   requestAnimationFrame(bucle);
-  let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { const prev = modo; preparar(); if (prev !== modo) dibujar(); requestAnimationFrame(ajustarEtiquetas); }, 120); }).observe(root);
+  let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { const prev = modo; preparar(); encuadrar(); if (prev !== modo) dibujar(); requestAnimationFrame(ajustarEtiquetas); }, 120); }).observe(root);
 })();

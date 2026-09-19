@@ -12,6 +12,6 @@ for k in ("escritorio", "movil"):
         s = "".join(str("ABCDE".index(c)) * (int(n, 36) if n else 1) for c, n in re.findall(r"([A-E])([0-9a-z]*)", r))
         assert len(s) == G[k]["cols"] and h(s) == hs[y], f"{k} fila {y} no verifica"
     G[k]["calles"] = "|".join(filas)
-G["fuente_calles"] = "Vías OpenStreetMap (© colaboradores OSM, ODbL): motorway/trunk(+link)=B, primary=C, secondary=D, tertiary=E; Overpass 2026-09-16T12:52:49Z; Bresenham a la grilla; filas RLE (letra=clase, largo base36)"
+G["fuente_calles"] = "Vías OpenStreetMap (© colaboradores OSM, ODbL): motorway/trunk(+link)=B, primary=C, secondary=D, tertiary=E; Overpass 2026-09-19T13:20:36Z; Bresenham a la grilla; filas RLE (letra=clase, largo base36)"
 GRID.write_text(json.dumps(G, ensure_ascii=False, separators=(",", ":")))
 print("ok", GRID)
