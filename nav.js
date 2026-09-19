@@ -9,12 +9,9 @@
 
   /* ── secciones ── */
   const secciones = [...main.querySelectorAll('section[id]')].map(s => {
-    const overs = [...s.querySelectorAll('.overline')].map(o => o.textContent.trim()).filter(t => /^\d+/.test(t));
-    const over = overs[0] || '';
-    const nums = overs.map(t => t.match(/^\d+/)[0]);
-    const num = nums.length > 1 ? `${nums[0]}–${nums.at(-1)}`.replace(/(\d+)–0?(\d+)$/, (m, a, b) => `${a}–${b.replace(/^0/, '')}`) : (nums[0] || '');
+    const num = s.dataset.n || '';
     const titulo = s.querySelector('h2, h3')?.textContent.trim() || s.id;
-    const corto = overs.map(t => t.replace(/^\d+\s*·\s*/, '')).join(' · ') || titulo;
+    const corto = s.dataset.corto || titulo;
     return { el: s, id: s.id, num, titulo, corto };
   });
   if (!secciones.length) return;

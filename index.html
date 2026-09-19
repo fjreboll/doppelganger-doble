@@ -207,6 +207,25 @@ section[id]:focus{outline:none}
 .pulso{animation:nav-pulso 1.4s ease-out 1}
 @keyframes nav-pulso{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--md-primary) 55%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
 @media (prefers-reduced-motion:reduce){.pulso{animation:none;outline:2px solid var(--md-primary)}}
+/* ── difuminado del mapa hacia la izquierda ── */
+.px-banner{--px-fade:linear-gradient(90deg,rgba(0,0,0,0) 0,rgba(0,0,0,.10) 6%,rgba(0,0,0,.45) 15%,rgba(0,0,0,.84) 27%,#000 38%)}
+.px-stage canvas,.px-labels{-webkit-mask-image:var(--px-fade);mask-image:var(--px-fade);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.px-velo{position:absolute;inset:0;pointer-events:none;backdrop-filter:blur(7px) saturate(.75);-webkit-backdrop-filter:blur(7px) saturate(.75);
+  -webkit-mask-image:linear-gradient(90deg,#000 0,rgba(0,0,0,.92) 12%,rgba(0,0,0,.52) 25%,rgba(0,0,0,.18) 37%,transparent 50%);
+  mask-image:linear-gradient(90deg,#000 0,rgba(0,0,0,.92) 12%,rgba(0,0,0,.52) 25%,rgba(0,0,0,.18) 37%,transparent 50%)}
+@media (max-width:639px){
+ .px-banner{--px-fade:linear-gradient(90deg,rgba(0,0,0,0) 0,rgba(0,0,0,.4) 8%,#000 24%)}
+ .px-velo{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  -webkit-mask-image:linear-gradient(90deg,#000 0,rgba(0,0,0,.55) 14%,transparent 30%);
+  mask-image:linear-gradient(90deg,#000 0,rgba(0,0,0,.55) 14%,transparent 30%)}
+}
+
+/* ── bandas generativas por sección (secviz.js) ── */
+.viz-band{position:relative;height:90px;margin:40px 0 14px;overflow:hidden;border-radius:var(--shape-s);background:#05050a;border:1px solid #17171b}
+.viz-band canvas{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.viz-band::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.6),transparent 20%,transparent 80%,rgba(0,0,0,.6))}
+section:first-of-type .viz-band{margin-top:24px}
+@media (max-width:639px){.viz-band{height:62px;margin:26px 0 12px}}
 </style>
 </head>
 <body>
@@ -237,10 +256,10 @@ section[id]:focus{outline:none}
     <div class="px-stage">
       <canvas role="img" aria-label="Mapa pixelado de la Región Metropolitana con las cuatro comunas del gemelo sintético"></canvas>
       <div class="px-labels" aria-hidden="true"></div>
+      <div class="px-velo" aria-hidden="true"></div>
       <div class="px-ctrl"><button class="icon-btn px-play" aria-label="Pausar animación"><span class="material-symbols-outlined">pause</span></button><input class="px-range" type="range" min="0" max="24" step="1" value="0" aria-label="Mes simulado"></div>
     </div>
     <div class="px-copy">
-      <p class="px-kicker">Prueba A · registro de divergencias</p>
       <h2 class="px-title px-title-long" id="px-title"><span>Santiago</span> <span>Gemelo Digital</span></h2>
       <p class="px-sub">Lo que el registro ve y lo que la vida hace, hogar por hogar.</p>
       <div class="px-counter" aria-live="off"><span class="px-mes">MES 00</span><span><span class="px-total">0</span> hogares divergen</span></div>
@@ -258,9 +277,8 @@ section[id]:focus{outline:none}
 </div>
 
 <div class="wrap hero">
-  <span class="overline">Doppelganger · prueba A</span>
   <h1 class="display-m">Cuando el registro decide, la vida diverge.</h1>
-  <p class="body-l muted">559.440 hogares sintéticos en cuatro comunas. Un registro decide a quién priorizar; cada decisión muestra su <b>costura</b> y cada discrepancia con la vida real queda en el <b>registro público de divergencias</b>.</p>
+  <p class="body-l muted">559.440 hogares sintéticos. Cada decisión muestra su <b>costura</b>; cada discrepancia con la vida entra al <b>registro de divergencias</b>.</p>
   <div class="chip-set" style="margin-top:20px">
     <span class="chip assist"><span class="material-symbols-outlined">science</span>Hogares sintéticos</span>
     <span class="chip assist"><span class="material-symbols-outlined">rule</span>Regla análoga al RSH</span>
@@ -270,8 +288,9 @@ section[id]:focus{outline:none}
 
 <div class="wrap"><div class="grid g-4" id="stats" style="margin:24px 0 16px"></div></div>
 
-<section class="wrap" id="hogar">
-  <div class="sec-head"><div><span class="overline">01 · El hogar</span><h2 class="headline-s">Qué hace a un hogar y qué mira la regla</h2><p class="body-m muted" style="margin-top:4px">Casa o departamento es parte del hogar sintético, pero la regla nunca lo lee.</p></div></div>
+<section class="wrap" id="hogar" data-n="01" data-corto="El hogar">
+  <div class="viz-band" data-viz="hogar" data-n="01"></div>
+  <div class="sec-head"><div><h2 class="headline-s">Qué hace a un hogar y qué mira la regla</h2><p class="body-m muted" style="margin-top:4px">La vivienda está en el hogar sintético; la regla nunca la lee.</p></div></div>
   <div class="card fx">
     <div class="fx-grid">
       <div class="fx-col">
@@ -304,7 +323,7 @@ section[id]:focus{outline:none}
     </div>
   </div>
   <div class="card chart-card" style="margin-top:16px">
-    <header><div><h3 class="title-m">Casas y departamentos ante la regla, al mes 24</h3><p class="body-m muted">Tipo de vivienda del donante CASEN. El registro no lo usa; las diferencias vienen del ingreso y la composición.</p></div>
+    <header><div><h3 class="title-m">Casas y departamentos ante la regla, al mes 24</h3><p class="body-m muted">El registro no usa la vivienda: lo que difiere viene del ingreso.</p></div>
     <button class="btn text" data-table="t-viv"><span class="material-symbols-outlined">table</span>Tabla</button></header>
     <div class="legend"><span><span class="dot" style="background:var(--md-on-surface)"></span>Casa</span><span><span class="sq"></span>Departamento</span></div>
     <div class="minis viv">
@@ -316,8 +335,9 @@ section[id]:focus{outline:none}
   </div>
 </section>
 
-<section class="wrap" id="costura">
-  <div class="sec-head"><div><span class="overline">02 · La costura</span><h2 class="headline-s">Junto al umbral, el sistema casi adivina</h2></div></div>
+<section class="wrap" id="costura" data-n="02" data-corto="La costura">
+  <div class="viz-band" data-viz="costura" data-n="02"></div>
+  <div class="sec-head"><div><h2 class="headline-s">Junto al umbral, el sistema casi adivina</h2></div></div>
   <div class="card chart-card">
     <header><div><h3 class="title-m">Acierto del registro según su percentil</h3><p class="body-m muted">CASEN 2022, nacional.</p></div>
     <button class="btn text" data-table="t-conf"><span class="material-symbols-outlined">table</span>Tabla</button></header>
@@ -333,8 +353,9 @@ section[id]:focus{outline:none}
   <span class="body-s muted">Filtra todo lo que sigue.</span>
 </div></div>
 
-<section class="wrap" id="cien">
-  <div class="sec-head"><div><span class="overline">03 · Magnitud</span><h2 class="headline-s">De cada 100 hogares, al mes 24</h2></div></div>
+<section class="wrap" id="cien" data-n="03" data-corto="Magnitud">
+  <div class="viz-band" data-viz="cien" data-n="03"></div>
+  <div class="sec-head"><div><h2 class="headline-s">De cada 100 hogares, al mes 24</h2></div></div>
   <div class="card chart-card">
     <header><div><h3 class="title-m">Coinciden o divergen</h3><p class="body-m muted">Un cuadro = un hogar.</p></div>
     <button class="btn text" data-table="t-waffle"><span class="material-symbols-outlined">table</span>Tabla</button></header>
@@ -344,28 +365,30 @@ section[id]:focus{outline:none}
   </div>
 </section>
 
-<section class="wrap" id="tiempo">
-  <div class="sec-head"><div><span class="overline">04 · Divergencia sin escena</span><h2 class="headline-s">La brecha crece en silencio</h2></div></div>
+<section class="wrap" id="tiempo" data-n="04" data-corto="Divergencia sin escena">
+  <div class="viz-band" data-viz="tiempo" data-n="04"></div>
+  <div class="sec-head"><div><h2 class="headline-s">La brecha crece en silencio</h2></div></div>
   <div class="card chart-card">
-    <header><div><h3 class="title-m">Hogares con divergencia, mes a mes</h3><p class="body-m muted">La vida cambia; el registro se entera tarde o nunca.</p></div>
+    <header><div><h3 class="title-m">Hogares con divergencia, mes a mes</h3><p class="body-m muted">El registro se entera tarde o nunca.</p></div>
     <button class="btn text" data-table="t-serie"><span class="material-symbols-outlined">table</span>Tabla</button></header>
     <div class="minis" id="c-serie"></div>
     <div class="tablewrap scroll-x" id="t-serie"></div>
   </div>
 </section>
 
-<section class="wrap" id="brecha">
+<section class="wrap" id="brecha" data-n="05" data-corto="Tres lecturas y su origen">
+  <div class="viz-band" data-viz="brecha" data-n="05"></div>
   <div class="grid g-2">
     <div class="card chart-card">
-      <header><div><span class="overline">05 · Tres lecturas</span><h3 class="title-m" style="margin-top:4px">Registro simulado, RSH real y vida situada</h3></div>
+      <header><div><h3 class="title-m">Registro simulado, RSH real y vida situada</h3></div>
       <button class="btn text" data-table="t-dumb"><span class="material-symbols-outlined">table</span>Tabla</button></header>
       <div class="legend"><span><span class="dot" style="background:var(--md-on-surface)"></span>Registro</span><span><span class="dot" style="border:2px solid var(--md-on-surface);width:10px;height:10px"></span>Situado</span><span><span class="dia"></span>RSH 2023 (tramo 40%)</span></div>
       <svg class="chart-svg" id="c-dumb" role="img" aria-label="Registro simulado, RSH 2023 y vida situada por comuna"></svg>
-      <p class="body-s muted" style="margin-top:8px">El simulado queda 1–7 p.p. bajo el RSH real (SINIM 2023). El RSH solo cuenta hogares inscritos.</p>
+      <p class="body-s muted" style="margin-top:8px">El simulado queda 1–7 p.p. bajo el RSH real (SINIM 2023), que solo cuenta hogares inscritos.</p>
       <div class="tablewrap scroll-x" id="t-dumb"></div>
     </div>
     <div class="card chart-card">
-      <header><div><span class="overline">06 · Origen</span><h3 class="title-m" style="margin-top:4px">Dónde nace cada divergencia</h3></div>
+      <header><div><h3 class="title-m">Dónde nace cada divergencia</h3></div>
       <button class="btn text" data-table="t-locus"><span class="material-symbols-outlined">table</span>Tabla</button></header>
       <div class="legend" id="lg-locus"></div>
       <svg class="chart-svg" id="c-locus" role="img" aria-label="Entradas del registro por tipología y locus"></svg>
@@ -374,21 +397,23 @@ section[id]:focus{outline:none}
   </div>
 </section>
 
-<section class="wrap" id="registro">
-  <div class="sec-head"><div><span class="overline">07 · El registro</span><h2 class="headline-s">Entradas del registro</h2><p class="body-m muted" style="margin-top:4px">Seis campos por caso. La costura, en rojo.</p></div>
+<section class="wrap" id="registro" data-n="06" data-corto="El registro">
+  <div class="viz-band" data-viz="fichas" data-n="06"></div>
+  <div class="sec-head"><div><h2 class="headline-s">Entradas del registro</h2><p class="body-m muted" style="margin-top:4px">Seis campos por caso. La costura, en rojo.</p></div>
   <div class="chip-set" id="chips-tipo"></div></div>
   <div class="grid g-3" id="casos"></div>
   <div style="text-align:center;margin-top:16px"><button class="btn tonal" id="mas-casos"><span class="material-symbols-outlined">expand_more</span><span class="n">Ver más</span></button></div>
 </section>
 
-<section class="wrap" id="metodo">
-  <div class="sec-head"><div><span class="overline">08 · Método</span><h2 class="headline-s">Cómo se hizo y cómo se audita</h2></div></div>
+<section class="wrap" id="metodo" data-n="07" data-corto="Método">
+  <div class="viz-band" data-viz="metodo" data-n="07"></div>
+  <div class="sec-head"><div><h2 class="headline-s">Cómo se hizo y cómo se audita</h2></div></div>
   <div class="stepper">
-    <div class="step"><h4 class="title-s">Ingesta</h4><p class="body-s muted">Fuentes con procedencia: Censo 2024, CASEN 2022, RSH 2023.</p></div>
+    <div class="step"><h4 class="title-s">Ingesta</h4><p class="body-s muted">Censo 2024, CASEN 2022, RSH 2023.</p></div>
     <div class="step"><h4 class="title-s">Calibración</h4><p class="body-s muted">Un hogar sintético por hogar censado.</p></div>
     <div class="step"><h4 class="title-s">Deriva</h4><p class="body-s muted">24 meses de cambios; el registro llega tarde.</p></div>
-    <div class="step"><h4 class="title-s">Costura</h4><p class="body-s muted">Sin confianza, antigüedad, umbral y fuente no hay decisión.</p></div>
-    <div class="step"><h4 class="title-s">Registro</h4><p class="body-s muted">Cada discrepancia: seis campos, tipo y origen.</p></div>
+    <div class="step"><h4 class="title-s">Costura</h4><p class="body-s muted">Confianza, antigüedad, umbral y fuente.</p></div>
+    <div class="step"><h4 class="title-s">Registro</h4><p class="body-s muted">Seis campos, tipo y origen.</p></div>
     <div class="step"><h4 class="title-s">Autorregistro</h4><p class="body-s muted">El dispositivo declara sus propios errores.</p></div>
   </div>
   <div class="grid g-2" style="margin-top:16px">
@@ -412,6 +437,7 @@ section[id]:focus{outline:none}
 <script src="assets/d3.v7.min.js"></script>
 <script src="app.js"></script>
 <script src="banner.js"></script>
+<script src="secviz.js"></script>
 <script src="nav.js"></script>
 </body>
 </html>
