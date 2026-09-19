@@ -72,16 +72,24 @@
     /* A · la costura: la confianza se hunde junto al umbral */
     costura(p, t) {
       p.limpiar();
-      const n = 20, an = Math.max(3, Math.floor((p.W - 10) / n) - 2), x0 = 5, um = 8;
+      const n = 20, an = Math.max(4, Math.floor((p.W - 12) / n) - 2), x0 = 6, um = 8, base = p.H - 3;
       for (let i = 0; i < n; i++) {
         const d = Math.abs(i - um), cerca = d <= 1;
-        const conf = 0.26 + 0.7 * Math.min(1, d / 6);
-        const h = Math.max(2, Math.round(conf * (p.H - 5)));
+        const h = Math.max(2, Math.round((0.24 + 0.72 * Math.min(1, d / 6)) * (p.H - 6)));
+        const x = x0 + i * (an + 2);
         const parp = cerca && !RM && Math.sin(t * 0.16 + i) > 0;
-        p.rect(x0 + i * (an + 2), p.H - 3 - h, an, h, cerca ? (parp ? C.rojo : C.rojof) : d <= 3 ? C.azulf : C.azul);
+        const cuerpo = cerca ? (parp ? C.rojo : C.rojof) : d <= 3 ? C.azulf : C.azul;
+        const tope = cerca ? (parp ? C.blanco : C.rojo) : d <= 3 ? C.azul : C.cian;
+        p.rect(x, base - h, an, h, cuerpo);
+        p.rect(x, base - h, an, 1, tope);                       // filo superior
+        p.rect(x, base - h + 1, 1, h - 1, 'rgba(255,255,255,.10)'); // luz a la izquierda
+        p.rect(x + an - 1, base - h + 1, 1, h - 1, 'rgba(0,0,0,.35)');
+        p.px(x + (an >> 1), base + 1, d % 5 === 0 ? C.gris : C.dim);   // marca del eje
       }
-      p.punteada(x0 + um * (an + 2) - 2, 0, p.H - 2, C.rojo);
-      p.hline(0, p.W - 1, p.H - 2, C.dim);
+      const xu = x0 + um * (an + 2) - 2;
+      p.punteada(xu, 0, base, C.rojo, 2);
+      p.rect(xu - 2, 0, 5, 1, C.rojo); p.px(xu - 2, 1, C.rojo); p.px(xu + 2, 1, C.rojo);
+      p.hline(0, p.W - 1, base + 2, C.dim);
     },
 
     /* A · magnitud: cien de cada cien, los que divergen encendidos */
@@ -133,15 +141,21 @@
     /* A · el registro: fichas de seis campos, una costura en rojo */
     fichas(p, t) {
       p.limpiar();
-      const an = 34, sep = 5, n = Math.ceil(p.W / (an + sep)) + 1;
+      const an = 36, sep = 6, n = Math.ceil(p.W / (an + sep)) + 2;
       const off = RM ? 0 : (t * .8) % (an + sep);
       for (let i = 0; i < n; i++) {
-        const x = Math.round(i * (an + sep) - off), s = ((i * 7919) % 6);
-        p.rect(x, 2, an, p.H - 4, C.dim);
-        p.rect(x, 2, an, 1, C.mid);
+        const x = Math.round(i * (an + sep) - off), s = ((i * 7919) % 6), alto = p.H - 4;
+        p.rect(x, 2, an, alto, C.dim);
+        p.rect(x, 2, an, 3, C.mid);                       // cabecera de la ficha
+        p.rect(x + 2, 3, 6, 1, C.claro);
+        p.rect(x, 2, 1, alto, 'rgba(255,255,255,.08)');
+        p.rect(x + an - 1, 2, 1, alto, 'rgba(0,0,0,.4)');
         for (let f = 0; f < 6; f++) {
-          const largo = 8 + ((i * 31 + f * 17) % (an - 12));
-          p.rect(x + 3, 5 + f * ((p.H - 10) / 5), largo, 1, f === s ? C.rojo : f === 0 ? C.claro : C.gris);
+          const y = 7 + Math.round(f * (alto - 8) / 5);
+          const largo = 9 + ((i * 31 + f * 17) % (an - 14));
+          p.rect(x + 3, y, 2, 1, C.mid);                  // viñeta del campo
+          p.rect(x + 6, y, largo, 1, f === s ? C.rojo : C.gris);
+          if (f === s) p.rect(x + 6, y + 1, largo, 1, 'rgba(255,138,128,.25)');
         }
       }
     },
@@ -210,6 +224,7 @@
         const c = on ? C.rojo : C.rojof;
         for (let k = 0; k < an; k++) if (k % 3 !== 2) { p.px(x + k, 3, c); p.px(x + k, p.H - 4, c); }
         for (let k = 3; k <= p.H - 4; k++) if (k % 3 !== 2) { p.px(x, k, c); p.px(x + an - 1, k, c); }
+        for (let a = 2; a < an - 2; a += 2) for (let bq = 5; bq < p.H - 5; bq += 2) if ((a + bq) % 4 === 0) p.px(x + a, bq, on ? 'rgba(255,138,128,.18)' : 'rgba(255,138,128,.08)');
         if (on) p.spr(x + (an >> 1) - 2, (p.H >> 1) - 4, ['.rrr.', 'r...r', '...r.', '..r..', '.....', '..r..'], { r: C.rojo });
       }
     },
@@ -251,7 +266,11 @@
   const pintar = (b, t) => {
     if (!b.p) return;
     b.motivo(b.p, t);
-    if (b.n) { b.p.rect(2, 2, 4 * String(b.n).length + 3, 7, 'rgba(5,5,10,.72)'); b.p.num(4, 3, b.n, 'rgba(226,226,233,.30)'); }
+    if (b.n) {                                   // el número, discreto, en la esquina baja derecha
+      const an = 4 * String(b.n).length + 3, x = b.p.W - an - 2, y = b.p.H - 9;
+      b.p.rect(x, y, an, 7, 'rgba(5,5,10,.8)');
+      b.p.num(x + 2, y + 1, b.n, 'rgba(226,226,233,.32)');
+    }
   };
   const bandas = [];
   document.querySelectorAll('[data-viz]').forEach(host => {
@@ -262,9 +281,11 @@
     const b = { host, cv, motivo, n: host.dataset.n || '', p: null, cols: 0, rows: 0, visible: false };
     const medir = () => {
       const r = host.getBoundingClientRect(); if (!r.width) return;
-      b.cols = Math.max(20, Math.round(r.width / CELDA));
-      b.rows = Math.max(8, Math.round(r.height / CELDA));
+      b.cols = Math.max(20, Math.floor(r.width / CELDA));
+      b.rows = Math.max(8, Math.floor(r.height / CELDA));
       cv.width = b.cols; cv.height = b.rows;
+      cv.style.width = b.cols * CELDA + 'px';     // escala entera: sin píxeles a medias
+      cv.style.height = b.rows * CELDA + 'px';
       b.p = mk(cv, b.cols, b.rows);
       pintar(b, cuadro);
     };
