@@ -147,18 +147,8 @@
   // el canvas usa object-fit: contain; la capa de etiquetas se ajusta al rectángulo realmente dibujado
   const capa = root.querySelector('.px-labels');
   const encuadrar = () => {
-    const st = root.querySelector('.px-stage'); if (!grid || !st) return;
-    const caja = st.getBoundingClientRect(); if (!caja.width) return;
-    // escala entera siempre que no cueste tamaño: todas las celdas del mapa miden lo mismo
-    const ideal = Math.min(caja.width / grid.cols, caja.height / grid.rows);
-    let esc = Math.max(1, Math.floor(ideal));
-    if (ideal - esc > 0.88) esc += 1;                   // casi cabe la siguiente
-    if (esc > ideal || 1 - esc / ideal > 0.12) esc = Math.min(esc, ideal);   // no encoger de más
-    const entera = Number.isInteger(esc);
-    cv.style.width = grid.cols * esc + 'px'; cv.style.height = grid.rows * esc + 'px';
-    cv.style.imageRendering = entera ? 'pixelated' : 'auto';
-    const b = cv.getBoundingClientRect();
-    const w = grid.cols * esc, h = grid.rows * esc;
+    const b = cv.getBoundingClientRect(); if (!b.width || !grid) return;
+    const esc = Math.min(b.width / grid.cols, b.height / grid.rows), w = grid.cols * esc, h = grid.rows * esc;
     ox = (b.width - w) / 2; oy = (b.height - h) / 2; escala = esc;
     const s2 = root.querySelector('.px-stage').getBoundingClientRect();
     if (capa) { capa.style.left = (b.left - s2.left + ox) + 'px'; capa.style.top = (b.top - s2.top + oy) + 'px'; capa.style.width = w + 'px'; capa.style.height = h + 'px'; capa.style.right = 'auto'; capa.style.bottom = 'auto'; }
