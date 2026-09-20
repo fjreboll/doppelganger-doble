@@ -12,7 +12,7 @@
 .ver.espejo{background:color-mix(in srgb,var(--viz-1) 22%,transparent);color:#aac7ff}
 .ver.interno{border:1px dashed var(--md-outline);color:var(--md-on-surface-variant)}
 .ver.parcial{background:color-mix(in srgb,var(--viz-2) 22%,transparent);color:#ffb59a}
-.hero{padding-top:32px;padding-bottom:8px}
+.hero{padding-top:48px;padding-bottom:16px}
 .hero .display-m{max-width:880px;margin:12px 0 16px}
 .hero .body-l{max-width:760px}
 .stat .v{font:400 45px/52px var(--font);letter-spacing:0;margin:4px 0}
@@ -221,11 +221,11 @@ section[id]:focus{outline:none}
 }
 
 /* ── bandas generativas por sección (secviz.js) ── */
-.viz-band{position:relative;height:90px;margin:40px 0 14px;overflow:hidden;border-radius:var(--shape-s);background:#05050a;border:1px solid #17171b;display:flex;align-items:center;justify-content:center}
+.viz-band{position:relative;height:90px;margin:56px 0 22px;overflow:hidden;border-radius:var(--shape-s);background:#05050a;border:1px solid #17171b;display:flex;align-items:center;justify-content:center}
 .viz-band canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .viz-band::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.6),transparent 20%,transparent 80%,rgba(0,0,0,.6))}
 section:first-of-type .viz-band{margin-top:24px}
-@media (max-width:639px){.viz-band{height:62px;margin:26px 0 12px}}
+@media (max-width:639px){.viz-band{height:62px;margin:36px 0 18px}}
 </style>
 </head>
 <body>
