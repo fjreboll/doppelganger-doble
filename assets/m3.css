@@ -1,10 +1,13 @@
-/* Tipografías auto-alojadas (Roboto Flex, Roboto Mono, Material Symbols · Apache 2.0 / OFL) */
+/* Tipografías auto-alojadas (Roboto Flex y Roboto Mono · OFL; los iconos se dibujan en SVG con iconos.js) */
 @font-face{font-family:"Roboto Flex";font-style:normal;font-display:swap;font-weight:100 1000;src:url(fonts/roboto-flex-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Roboto Flex";font-style:normal;font-display:swap;font-weight:100 1000;src:url(fonts/roboto-flex-latin-ext-wght-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"Roboto Mono";font-style:normal;font-display:swap;font-weight:400;src:url(fonts/roboto-mono-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Roboto Mono";font-style:normal;font-display:swap;font-weight:500;src:url(fonts/roboto-mono-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:"Material Symbols Outlined";font-style:normal;font-weight:100 700;font-display:block;src:url(fonts/material-symbols-outlined.woff2) format("woff2")}
-.material-symbols-outlined{font-family:"Material Symbols Outlined";font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:"liga";font-feature-settings:"liga";-webkit-font-smoothing:antialiased}
+
+/* iconos: SVG en línea (iconos.js). Sin fuente que descargar: nunca aparecen como palabras */
+.material-symbols-outlined{display:inline-block;width:1em;height:1em;line-height:1;overflow:hidden;flex:none;font-style:normal;white-space:nowrap}
+.material-symbols-outlined:not([data-icon]){color:transparent}
+.material-symbols-outlined svg{display:block;width:100%;height:100%}
 /* Material Design 3 · tokens y componentes base (esquema generado con semilla azul, Material Theme Builder) */
 :root{
   color-scheme:light;
@@ -94,7 +97,7 @@ h1,h2,h3,h4,p{margin:0}
 .chip{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 16px;border-radius:var(--shape-s);border:1px solid var(--md-outline);background:transparent;color:var(--md-on-surface-variant);font:500 14px/20px var(--font);letter-spacing:.1px;cursor:pointer;white-space:nowrap}
 .chip:hover{background:color-mix(in srgb,var(--md-on-surface-variant) 8%,transparent)}
 .chip[aria-pressed="true"]{background:var(--md-secondary-container);color:var(--md-on-secondary-container);border-color:transparent;padding-left:8px}
-.chip[aria-pressed="true"]::before{content:"check";font-family:"Material Symbols Outlined";font-size:18px}
+.chip[aria-pressed="true"]::before{content:"";display:inline-block;width:18px;height:18px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat}
 .chip.assist{border-color:var(--md-outline-variant);cursor:default}
 .chip .swatch{width:10px;height:10px;border-radius:2px;display:inline-block}
 /* segmented buttons */
@@ -102,7 +105,7 @@ h1,h2,h3,h4,p{margin:0}
 .seg button{border:0;border-left:1px solid var(--md-outline);background:transparent;color:var(--md-on-surface);font:500 14px/20px var(--font);letter-spacing:.1px;height:40px;padding:0 16px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .seg button:first-child{border-left:0}
 .seg button[aria-pressed="true"]{background:var(--md-secondary-container);color:var(--md-on-secondary-container)}
-.seg button[aria-pressed="true"]::before{content:"check";font-family:"Material Symbols Outlined";font-size:18px}
+.seg button[aria-pressed="true"]::before{content:"";display:inline-block;width:18px;height:18px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat}
 /* cards */
 .card{background:var(--md-surface-container-lowest);border-radius:var(--shape-m);padding:24px;min-width:0}
 .card.elevated{background:var(--md-surface-container-low);box-shadow:var(--md-elev-1)}
@@ -133,7 +136,7 @@ table.data td.n,table.data th.n{text-align:right;font-variant-numeric:tabular-nu
 details.exp{border-radius:var(--shape-m);background:var(--md-surface-container-low);margin-bottom:8px}
 details.exp summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;gap:12px;align-items:center}
 details.exp summary::-webkit-details-marker{display:none}
-details.exp summary::after{content:"expand_more";font-family:"Material Symbols Outlined";margin-left:auto;font-size:24px;transition:transform .2s;color:var(--md-on-surface-variant)}
+details.exp summary::after{content:"";display:inline-block;width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z'/%3E%3C/svg%3E") center/contain no-repeat;margin-left:auto;transition:transform .2s;color:var(--md-on-surface-variant)}
 details.exp[open] summary::after{transform:rotate(180deg)}
 details.exp .body{padding:0 16px 16px}
 .badge{white-space:nowrap;display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:var(--shape-s);font:500 12px/16px var(--font);letter-spacing:.5px}
