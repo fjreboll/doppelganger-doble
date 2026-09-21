@@ -1,0 +1,6 @@
+pipeline/data/raw/
+pipeline/data/interim/
+pipeline/db/*.db
+pipeline/src/__pycache__/
+__pycache__/
+*.pyc

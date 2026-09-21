@@ -185,3 +185,36 @@ resumen = dict(
         corridas=div_df.to_dict("records")))
 (SALIDAS / "sensibilidad.json").write_text(json.dumps(resumen, ensure_ascii=False, indent=1), encoding="utf-8")
 print("\nlisto · rango divergencia total:", resumen["divergencia_simulada"]["rango_total"])
+
+
+# ───────── autorregistro: antes este resultado no quedaba en la base (solo en salidas/) ─────────
+def pct(x, dec=0):
+    return f"{x * 100:.{dec}f}".replace(".", ",") + "%"
+
+
+base_real = conf_df[(conf_df.escala == 0.7) & (conf_df.umbral == 40.0)].iloc[0]
+sim_cols = pd.concat([div_df.conf_sim_p40_p45, div_df.conf_sim_p45_p50])
+div_min, div_max = resumen["divergencia_simulada"]["rango_total"]
+
+con.execute("DELETE FROM autorregistro WHERE componente='A·sensibilidad'")
+autorregistro(con, componente="A·sensibilidad",
+    que_registro="Sensibilidad del resultado a sus propios supuestos: curva de confianza recalculada sobre CASEN 2022 "
+                 "con tres escalas de equivalencia (0,5 / 0,7 / 1,0) y tres umbrales (p30 / p40 / p50); divergencia a "
+                 "24 meses con tres escenarios de informalidad por tres semillas",
+    efecto=f"La caída de la confianza junto al umbral se sostiene en las nueve configuraciones (mínimo en el vigintil "
+           f"del umbral o el contiguo, entre {pct(conf_df.conf_minima.min())} y {pct(conf_df.conf_minima.max())} de "
+           f"acierto); la divergencia total se mueve entre {pct(div_min, 1)} y {pct(div_max, 1)} y el orden entre "
+           f"comunas no cambia",
+    inexactitud=f"En la población sintética el acierto junto al umbral ({pct(sim_cols.min())}–{pct(sim_cols.max())}) "
+                f"es más alto que en la CASEN real ({pct(base_real.conf_franja_min)}–{pct(base_real.conf_franja_max)}): "
+                f"el modelo es conservador y subestima la confusión que produce el corte. La magnitud de la "
+                f"divergencia sigue dependiendo de nueve supuestos de deriva no calibrados",
+    metrica=dict(n_configuraciones_confianza=9, n_corridas_divergencia=9,
+                 rango_divergencia=[round(div_min, 4), round(div_max, 4)],
+                 rango_confianza_minima=[round(float(conf_df.conf_minima.min()), 4), round(float(conf_df.conf_minima.max()), 4)],
+                 rango_confianza_sintetica_p40_p50=[round(float(sim_cols.min()), 4), round(float(sim_cols.max()), 4)],
+                 confianza_casen_real_p40_p50=[round(float(base_real.conf_franja_min), 4), round(float(base_real.conf_franja_max), 4)]),
+    alcance="4 comunas piloto",
+    correccion="Calibrar las probabilidades de deriva con ENE-INE, seguro de cesantía y actualizaciones efectivas del RSH",
+    deteccion="Ejecución del script 14_sensibilidad.py sobre la misma base")
+con.commit()

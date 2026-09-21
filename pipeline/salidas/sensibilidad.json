@@ -1,5 +1,5 @@
 {
- "generado": "2026-09-19",
+ "generado": "2026-09-21",
  "confianza_casen": {
   "descripcion": "P(clasificación situada = registrada | vigintil del registro), CASEN 2022 expandida; dato real, no simulado",
   "franja_sobre_umbral": {
@@ -249,7 +249,7 @@
     "div_Las Condes": 0.1565,
     "div_Puente Alto": 0.244,
     "div_Santiago": 0.2545,
-    "conf_sim_p40_p45": 0.4931,
+    "conf_sim_p40_p45": 0.493,
     "conf_sim_p45_p50": 0.5155
    },
    {
