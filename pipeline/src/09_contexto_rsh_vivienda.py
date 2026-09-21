@@ -14,9 +14,7 @@ V5 = RAW / "censo2024_tabulados" / "V5_Tipologias-de-viviendas-censadas.xlsx"
 SITIOS = [Path(p) for p in sys.argv[2:]] or [RAIZ.parent / "sitios" / "doppelganger-doble"]
 TRAMOS = {4624: "0-40", 4625: "41-50", 4626: "51-60", 4627: "61-70", 4628: "71-80", 4629: "81-90", 4630: "91-100"}
 
-con = conectar()
-con.execute("""CREATE TABLE IF NOT EXISTS contexto_comunal (comuna_cut TEXT, variable TEXT, categoria TEXT, valor REAL,
-               fuente_id TEXT REFERENCES fuente(id), PRIMARY KEY (comuna_cut, variable, categoria))""")
+con = conectar()  # contexto_comunal vive en db/schema.sql (creada por 01_ingesta.py vía iniciar_db)
 con.execute("DELETE FROM contexto_comunal")
 con.execute("DELETE FROM autorregistro WHERE componente='A·contexto'")
 fuente(con, id="sinim_rsh2023", nombre="SINIM · Registro Social de Hogares, hogares por tramo de CSE (2023)", institucion="Subdere · SINIM (fuente primaria: MDSF)",
