@@ -1,5 +1,13 @@
 /* Santiago Gemelo Digital · dashboard infográfico (Material 3 + método dataviz) */
 (async function () {
+  /* reloj compartido del mes simulado (0-24): banner.js y los gráficos de la serie se sincronizan
+     contra esto en vez de animar cada uno por su cuenta. Definido antes del primer await para que
+     exista ya cuando banner.js (que carga después) intente suscribirse. */
+  window.gemelo = {
+    mes: 24, _oyentesMes: [],
+    onMes(fn) { this._oyentesMes.push(fn); return () => { this._oyentesMes = this._oyentesMes.filter(f => f !== fn); }; },
+    setMes(m) { this.mes = m; this._oyentesMes.forEach(fn => fn(m)); }
+  };
   const D = await (await fetch('data.json')).json();
   const $ = s => document.querySelector(s);
   const nf = new Intl.NumberFormat('es-CL');
@@ -45,13 +53,13 @@
   const sel = () => comuna === 'Todas' ? COMUNAS : [comuna];
   const pulsar = el => { if (!el) return; el.classList.remove('pulso'); void el.offsetWidth; el.classList.add('pulso'); };
   /* API para el banner y la navegación: filtrar por comuna y llevar la vista al bloque correspondiente */
-  window.gemelo = {
+  Object.assign(window.gemelo, {
     comunas: COMUNAS,
     setComuna(c, destino = 'cien') {
       const b = document.querySelector(`#seg-comuna button[data-c="${c}"]`); if (b) b.click();
       if (destino) { window.doppelNav?.irA(destino, false); setTimeout(() => pulsar(document.querySelector(`#${destino} .card`)), 500); }
     }
-  };
+  });
 
   /* ── 01 confianza ── */
   function renderConf() {
@@ -106,11 +114,17 @@
     table('t-waffle', ['Comuna', 'Coincide', 'Falso positivo', 'Falso negativo', 'Desactualizada', 'Hogares'], rows);
   }
 
-  /* ── 03 serie mensual (small multiples, misma escala) ── */
+  /* ── 03 serie mensual (small multiples, misma escala) ──
+     El hairline queda siempre visible en el mes del reloj compartido (window.gemelo), no solo al
+     pasar el mouse: mover el banner mueve estos gráficos, y pasar el mouse por un gráfico mueve el
+     banner. quitarOyenteSerie se limpia en cada llamada porque el filtro de comuna redibuja todo. */
+  let quitarOyenteSerie = null;
   function renderSerie() {
+    quitarOyenteSerie?.();
     const box = $('#c-serie'); box.innerHTML = '';
     const ymax = d3.max(D.serie, d => d.divergencia) * 1.15, rows = [];
     const cards = sel().map(c => { const card = document.createElement('div'); box.append(card); return [c, card]; });
+    const movers = [];
     cards.forEach(([c, card]) => {
       const s = D.serie.filter(d => d.comuna === c);
       const d0 = s[0].divergencia, d24 = s[s.length - 1].divergencia;
@@ -126,15 +140,19 @@
       svg.append('path').datum(s).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('d', d3.line().x(d => x(d.mes)).y(d => y(d.divergencia)));
       svg.append('circle').attr('cx', x(24)).attr('cy', y(d24)).attr('r', 4).attr('fill', col).attr('stroke', css('--md-surface-container-lowest')).attr('stroke-width', 2);
       svg.append('text').attr('x', x(24) + 8).attr('y', y(d24) + 4).attr('font-size', 12).attr('fill', css('--md-on-surface')).text(pct(d24, 0));
-      const hair = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--viz-muted')).attr('stroke-width', 1).attr('opacity', 0);
-      const dot = svg.append('circle').attr('r', 4).attr('fill', col).attr('stroke', css('--md-surface-container-lowest')).attr('stroke-width', 2).attr('opacity', 0);
+      const hair = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--viz-muted')).attr('stroke-width', 1);
+      const dot = svg.append('circle').attr('r', 4).attr('fill', col).attr('stroke', css('--md-surface-container-lowest')).attr('stroke-width', 2);
+      const mover = mes => { const d = s[Math.max(0, Math.min(24, mes))]; hair.attr('x1', x(mes)).attr('x2', x(mes)); dot.attr('cx', x(mes)).attr('cy', y(d.divergencia)); };
+      movers.push(mover);
       svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
         .on('pointermove', e => { const [px] = d3.pointer(e); const mes = Math.max(0, Math.min(24, Math.round(x.invert(px)))), d = s[mes];
-          hair.attr('x1', x(mes)).attr('x2', x(mes)).attr('opacity', 1); dot.attr('cx', x(mes)).attr('cy', y(d.divergencia)).attr('opacity', 1);
+          window.gemelo.setMes(mes);
           showTT(e, `<div class="tt-sub">${c} · mes ${mes}</div><div class="tt-val">${pct(d.divergencia)}</div><div>divergen</div><hr class="divider" style="margin:8px 0"><div class="row"><span>Priorizado sin serlo</span><b>${pct(d.falso_positivo)}</b></div><div class="row"><span>Excluido siendo elegible</span><b>${pct(d.falso_negativo)}</b></div><div class="row"><span>Se mudó</span><b>${pct(d.mudados)}</b></div><div class="row"><span>Hogar cambió</span><b>${pct(d.composicion_desactualizada)}</b></div>`); })
-        .on('pointerleave', () => { hideTT(); hair.attr('opacity', 0); dot.attr('opacity', 0); });
+        .on('pointerleave', hideTT);
       s.filter(d => d.mes % 6 === 0).forEach(d => rows.push([`${c} · mes ${d.mes}`, pct(d.divergencia), pct(d.falso_positivo), pct(d.falso_negativo), pct(d.mudados)]));
     });
+    quitarOyenteSerie = window.gemelo.onMes(m => movers.forEach(mv => mv(m)));
+    movers.forEach(mv => mv(window.gemelo.mes));
     table('t-serie', ['Comuna · mes', 'Divergencia', 'Prioriza sin elegibilidad', 'Elegible no priorizado', 'Mudados'], rows);
   }
 

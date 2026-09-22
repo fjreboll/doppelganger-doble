@@ -129,7 +129,7 @@
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(root);
   function bucle(t) {
     if (visible && jugando && t > pausaHasta && t - ultimo > 260) {
-      ultimo = t; mes = mes >= 24 ? 0 : mes + 1; dibujar();
+      ultimo = t; mes = mes >= 24 ? 0 : mes + 1; dibujar(); window.gemelo?.setMes(mes);
       if (mes === 24) pausaHasta = t + 2600;
     }
     requestAnimationFrame(bucle);
@@ -139,8 +139,11 @@
   const btn = $('.px-play');
   const syncBtn = () => { btn.querySelector('span').textContent = jugando ? 'pause' : 'play_arrow'; btn.setAttribute('aria-label', jugando ? 'Pausar animación' : 'Reproducir animación'); };
   btn.onclick = () => { jugando = !jugando; syncBtn(); };
-  $('.px-range').addEventListener('input', e => { jugando = false; syncBtn(); mes = +e.target.value; dibujar(); });
+  $('.px-range').addEventListener('input', e => { jugando = false; syncBtn(); mes = +e.target.value; dibujar(); window.gemelo?.setMes(mes); });
   const syncRange = () => { $('.px-range').value = mes; };
+  /* reloj compartido con los gráficos de la serie (app.js): un mes que llega de afuera pausa el
+     autoplay del banner para no pelear con lo que el usuario está mirando. */
+  window.gemelo?.onMes(m => { if (m === mes) return; jugando = false; syncBtn(); mes = m; dibujar(); syncRange(); });
   setInterval(syncRange, 300);
 
   /* tooltip por celda */
@@ -183,7 +186,7 @@
     f.forEach((fila, dy) => [...fila].forEach((ch, dx) => { if (ch === '.') return; c2.fillStyle = ch === 'R' ? C.techo : ch === 'W' ? C.muro : C.ventana; c2.fillRect(dx + 1, dy + 1, 1, 1); })); });
   preparar(); encuadrar();
   if (reduce) { mes = 24; }
-  syncBtn(); dibujar(); syncRange();
+  syncBtn(); dibujar(); syncRange(); window.gemelo?.setMes(mes);
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(() => { encuadrar(); ajustarEtiquetas(); }));
   requestAnimationFrame(bucle);
   let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { const prev = modo; preparar(); encuadrar(); if (prev !== modo) dibujar(); requestAnimationFrame(ajustarEtiquetas); }, 120); }).observe(root);
