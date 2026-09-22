@@ -1,6 +1,7 @@
 pipeline/data/raw/
 pipeline/data/interim/
 pipeline/db/*.db
+pipeline/db/*.duckdb
 pipeline/src/__pycache__/
 __pycache__/
 *.pyc

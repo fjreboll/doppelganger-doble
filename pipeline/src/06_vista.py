@@ -18,8 +18,8 @@ for (t, l), _ in tip.groupby(["tipologia", "locus"]):
             r[k] = json.loads(r[k])
         casos.append(r)
 
-obj = rd("select o.id, o.tipo, o.nombre, o.atributos, o.plano_evidencia, f.nombre fuente, f.url, f.via_acceso from objeto o join fuente f on f.id=o.fuente_id")
-vin = rd("select v.origen source, v.destino target, v.tipo, v.fecha, v.cita, f.nombre fuente, f.url from vinculo v join fuente f on f.id=v.fuente_id")
+obj = rd("select o.id, o.tipo, o.nombre, o.atributos, o.plano_evidencia, f.nombre as fuente, f.url, f.via_acceso from objeto o join fuente f on f.id=o.fuente_id")
+vin = rd("select v.origen as source, v.destino as target, v.tipo, v.fecha, v.cita, f.nombre as fuente, f.url from vinculo v join fuente f on f.id=v.fuente_id")
 auto = rd("select componente, que_registro, efecto, inexactitud, correccion, deteccion from autorregistro order by id")
 fu = rd("select id, nombre, institucion, anio_referencia, via_acceso, plano_evidencia, url, nota_homologacion from fuente")
 

@@ -9,7 +9,16 @@ def check(nombre, ok, detalle):
     checks.append(dict(prueba=nombre, ok=bool(ok), detalle=detalle)); print(("OK   " if ok else "FALLA"), nombre, "·", detalle)
 
 # 1 · integridad
-check("Integridad referencial (PRAGMA foreign_key_check)", len(q("PRAGMA foreign_key_check")) == 0, f"{len(q('PRAGMA foreign_key_check'))} violaciones")
+# DuckDB aplica las FK al escribir (a diferencia de SQLite, que solo las audita si se le pide con
+# PRAGMA foreign_key_check); igual se recorren explícitamente aquí para no depender de eso.
+FKS = [("objeto", "tipo", "tipo_objeto", "tipo"), ("objeto", "fuente_id", "fuente", "id"),
+       ("vinculo", "origen", "objeto", "id"), ("vinculo", "destino", "objeto", "id"), ("vinculo", "fuente_id", "fuente", "id"),
+       ("censo_objetivo", "fuente_id", "fuente", "id"), ("contexto_comunal", "fuente_id", "fuente", "id"),
+       ("decision", "accion_id", "accion", "id"), ("decision", "hogar_id", "hogar_sintetico", "id"),
+       ("decision", "divergencia_id", "divergencia", "id"), ("divergencia", "accion_id", "accion", "id")]
+huerfanos_fk = sum(q(f"select count(*) from {ct} where {cc} is not null and not exists "
+                      f"(select 1 from {pt} where {pt}.{pc} = {ct}.{cc})")[0][0] for ct, cc, pt, pc in FKS)
+check("Integridad referencial (11 relaciones FK recorridas)", huerfanos_fk == 0, f"{huerfanos_fk} violaciones")
 check("Toda fuente declara plano de evidencia y vía de acceso", q("select count(*) from fuente where plano_evidencia is null or via_acceso is null")[0][0] == 0, f"{q('select count(*) from fuente')[0][0]} fuentes")
 
 # 2 · costura obligatoria y seis campos

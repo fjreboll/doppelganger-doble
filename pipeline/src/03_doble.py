@@ -113,7 +113,7 @@ hog = pd.DataFrame(dict(id=S.id, comuna_cut=S.cut_comuna, donante_folio=S.folio.
                         y_pension=pen, y_subsidio=sub, numper_t24=numper, y_formal_t24=formal.round(-2), y_informal_t24=informal.round(-2),
                         se_mudo=se_mudo.astype(int), numper_reg=numper_reg, y_formal_reg=formal_reg.round(-2),
                         domicilio_reg_vigente=dom_vigente.astype(int), meses_sin_actualizar=antig))
-hog.to_sql("hogar_sintetico", con, if_exists="append", index=False)
+con.execute("INSERT INTO hogar_sintetico SELECT * FROM hog")  # bulk (ver nota de rendimiento en 03_doble.py cabecera)
 
 diverge = prior_reg != elegible_sit
 tipos, locus = np.empty(N, object), np.empty(N, object)
@@ -153,8 +153,16 @@ for i in range(N):
 con.execute("INSERT INTO accion VALUES (?,?,?,?,?,?,?,?,?)", (acc_id, "priorizar_prestacion_comunal", "DOBLE",
             j({"umbral_percentil": UMBRAL, "escala_equivalencia": ESC, "cortes": "CASEN 2022 nacional (expr)", **PARAM}),
             MESES, ahora, N, int(prior_reg.sum()), int(diverge.sum())))
-con.executemany("INSERT INTO divergencia VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", filas_div)
-con.executemany("INSERT INTO decision VALUES (?,?,?,?,?,?,?,?,?)", filas_dec)
+# Bulk vía DataFrame + replacement scan, no executemany fila a fila: en DuckDB (a diferencia de
+# SQLite) executemany/to_sql insertan de a una fila y son ~300-400x más lentas a este volumen
+# (130k-560k filas); medido en el prototipo de Fase 1, ver notas de la migración.
+COLS_DIV = ["id", "estatuto", "sistema", "tipologia", "locus", "representacion", "decision", "ocurrido",
+            "afectado", "reparacion", "formulacion", "accion_id", "objeto_ref", "creada_en"]
+COLS_DEC = ["accion_id", "hogar_id", "resultado", "percentil_reg", "confianza", "antiguedad_meses", "umbral", "procedencia", "divergencia_id"]
+df_div = pd.DataFrame(filas_div, columns=COLS_DIV)
+df_dec = pd.DataFrame(filas_dec, columns=COLS_DEC)
+con.execute("INSERT INTO divergencia SELECT * FROM df_div")
+con.execute("INSERT INTO decision SELECT * FROM df_dec")
 
 # divergencia de sistema: umbrales 2022 aplicados a 2024
 con.execute("INSERT INTO divergencia VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (f"DIV-SISTEMA-DERIVA-{ahora[:10]}", "caso_compuesto",

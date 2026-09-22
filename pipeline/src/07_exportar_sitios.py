@@ -46,11 +46,11 @@ datos_a = dict(
 FAM = {"Institucion": "estado", "Unidad": "estado", "Programa": "programa", "Empresa": "privado", "Comite": "asesoria",
        "Instrumento": "instrumento", "Norma": "instrumento", "PersonaRol": "persona", "Territorio": "territorio",
        "Resultado": "resultado", "Ausencia": "ausencia"}
-obj = rd("""select o.id, o.tipo, o.nombre, o.atributos, o.plano_evidencia, o.fuente_id, f.nombre fuente, f.url, f.via_acceso, f.fecha_publicacion
+obj = rd("""select o.id, o.tipo, o.nombre, o.atributos, o.plano_evidencia, o.fuente_id, f.nombre as fuente, f.url, f.via_acceso, f.fecha_publicacion
             from objeto o join fuente f on f.id=o.fuente_id""")
 obj["familia"] = obj.tipo.map(FAM)
 obj["atributos"] = obj.atributos.map(lambda x: json.loads(x or "{}"))
-vin = rd("""select v.id, v.origen source, v.destino target, v.tipo, v.fecha, v.cita, v.plano_evidencia, v.fuente_id, f.nombre fuente, f.url
+vin = rd("""select v.id, v.origen as source, v.destino as target, v.tipo, v.fecha, v.cita, v.plano_evidencia, v.fuente_id, f.nombre as fuente, f.url
             from vinculo v join fuente f on f.id=v.fuente_id""")
 datos_c = dict(generado=HOY, nodos=obj.to_dict("records"), vinculos=vin.to_dict("records"),
                tipos=rd("select * from tipo_objeto").to_dict("records"),

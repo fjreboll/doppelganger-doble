@@ -1,9 +1,14 @@
-"""Utilidades comunes: rutas, conexión a la base y registro de fuentes."""
-import json, sqlite3, datetime as dt
+"""Utilidades comunes: rutas, conexión a la base y registro de fuentes.
+
+Prototipo Fase 1 (ver propuesta de arquitectura): motor DuckDB en vez de SQLite.
+Nombre de archivo distinto (doppelganger.duckdb) para no pisar la base SQLite
+de producción mientras ambas conviven.
+"""
+import json, duckdb, datetime as dt
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
-DB = RAIZ / "db" / "doppelganger.db"
+DB = RAIZ / "db" / "doppelganger.duckdb"
 RAW = RAIZ / "data" / "raw"
 INTERIM = RAIZ / "data" / "interim"
 SEEDS = RAIZ / "data" / "seeds"
@@ -15,16 +20,14 @@ SEMILLA = 20260915
 
 
 def conectar():
-    con = sqlite3.connect(DB)
-    con.execute("PRAGMA foreign_keys = ON")
-    return con
+    return duckdb.connect(str(DB))
 
 
 def iniciar_db(reset=False):
     if reset and DB.exists():
         DB.unlink()
     con = conectar()
-    con.executescript((RAIZ / "db" / "schema.sql").read_text())
+    con.execute((RAIZ / "db" / "schema.sql").read_text())
     return con
 
 

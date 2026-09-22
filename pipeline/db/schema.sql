@@ -1,8 +1,9 @@
 -- DOPPELGANGER POC · Base de datos común
 -- Registro público de divergencias algorítmicas + ontología (A: DOBLE) + grafo del encargo (C)
 -- Principio: ninguna decisión sin costura; ninguna costura sin fuente.
-
-PRAGMA foreign_keys = ON;
+--
+-- Motor: DuckDB (prototipo Fase 1). Sin PRAGMA foreign_keys: las FK se aplican por defecto.
+-- Sin AUTOINCREMENT (no existe en DuckDB): las dos PK autonuméricas usan CREATE SEQUENCE.
 
 -- ───────────── Procedencia ─────────────
 CREATE TABLE IF NOT EXISTS fuente (
@@ -36,8 +37,9 @@ CREATE TABLE IF NOT EXISTS objeto (
   fecha_dato      TEXT
 );
 
+CREATE SEQUENCE IF NOT EXISTS seq_vinculo START 1;
 CREATE TABLE IF NOT EXISTS vinculo (
-  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  id              INTEGER PRIMARY KEY DEFAULT nextval('seq_vinculo'),
   origen          TEXT NOT NULL REFERENCES objeto(id),
   destino         TEXT NOT NULL REFERENCES objeto(id),
   tipo            TEXT NOT NULL,
@@ -89,21 +91,9 @@ CREATE TABLE IF NOT EXISTS accion (
   n_evaluados   INTEGER, n_positivas INTEGER, n_divergencias INTEGER
 );
 
--- La costura es obligatoria: NOT NULL en confianza, antigüedad, umbral y procedencia.
-CREATE TABLE IF NOT EXISTS decision (
-  accion_id         TEXT NOT NULL REFERENCES accion(id),
-  hogar_id          TEXT NOT NULL REFERENCES hogar_sintetico(id),
-  resultado         INTEGER NOT NULL,   -- 1 = priorizado por el registro
-  percentil_reg     REAL NOT NULL,
-  confianza         REAL NOT NULL,
-  antiguedad_meses  INTEGER NOT NULL,
-  umbral            REAL NOT NULL,
-  procedencia       TEXT NOT NULL,
-  divergencia_id    TEXT REFERENCES divergencia(id),
-  PRIMARY KEY (accion_id, hogar_id)
-);
-
 -- ───────────── Registro público de divergencias (6 campos) ─────────────
+-- Va antes que decision: DuckDB (a diferencia de SQLite) valida que una FK
+-- apunte a una tabla que ya existe, y decision.divergencia_id referencia esta tabla.
 CREATE TABLE IF NOT EXISTS divergencia (
   id              TEXT PRIMARY KEY,
   estatuto        TEXT NOT NULL CHECK (estatuto IN ('caso_compuesto','documental','consentido')),
@@ -123,9 +113,24 @@ CREATE TABLE IF NOT EXISTS divergencia (
   creada_en       TEXT NOT NULL
 );
 
+-- La costura es obligatoria: NOT NULL en confianza, antigüedad, umbral y procedencia.
+CREATE TABLE IF NOT EXISTS decision (
+  accion_id         TEXT NOT NULL REFERENCES accion(id),
+  hogar_id          TEXT NOT NULL REFERENCES hogar_sintetico(id),
+  resultado         INTEGER NOT NULL,   -- 1 = priorizado por el registro
+  percentil_reg     REAL NOT NULL,
+  confianza         REAL NOT NULL,
+  antiguedad_meses  INTEGER NOT NULL,
+  umbral            REAL NOT NULL,
+  procedencia       TEXT NOT NULL,
+  divergencia_id    TEXT REFERENCES divergencia(id),
+  PRIMARY KEY (accion_id, hogar_id)
+);
+
 -- El registro también diverge.
+CREATE SEQUENCE IF NOT EXISTS seq_autorregistro START 1;
 CREATE TABLE IF NOT EXISTS autorregistro (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  id            INTEGER PRIMARY KEY DEFAULT nextval('seq_autorregistro'),
   componente    TEXT NOT NULL,
   que_registro  TEXT NOT NULL,
   efecto        TEXT NOT NULL,
