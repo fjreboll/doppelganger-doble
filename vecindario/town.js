@@ -24,7 +24,9 @@
   const LOCUS = { ingreso_no_registrable: 'Ingreso no registrable', movilidad_residencial: 'Movilidad residencial',
     posicion_relativa_en_ranking: 'Posición relativa en el ranking', rezago_ingreso_formal: 'Rezago del ingreso formal',
     composicion_hogar: 'Composición del hogar' };
-  const COMUNA_TINT = { 'Santiago': '--viz-1', 'La Pintana': '--viz-2', 'Las Condes': '--viz-3', 'Puente Alto': '--viz-seq' };
+  const COMUNA_TINT = { 'Santiago': '--viz-1', 'La Pintana': '--viz-2', 'Las Condes': '--viz-3', 'Puente Alto': '--viz-4' };
+  const ROPA = ['#c96a4b', '#4a7bab', '#c9a33f', '#8a5a8f', '#5c8f5c', '#b5673f'];   // variedad decorativa, no codifica nada
+  const PUERTAS = ['#5c4530', '#3d5a4d', '#4a3d5c', '#6b4530'];
   const ETIQUETA_TRAMO = { '0_14': 'niño/a', '15_29': 'joven', '30_44': 'adulto', '45_64': '45-64', '65': 'mayor' };
   const hash = i => { let x = (i + 1) * 2654435761 >>> 0; x ^= x >>> 16; x = Math.imul(x, 2246822507) >>> 0; x ^= x >>> 13; return (x >>> 0) / 4294967296; };
 
@@ -182,8 +184,8 @@
     };
   }
 
-  function dibujarCasa(ctx, x, y, tipo, techoVar) {
-    const d = dimDe(tipo), techo = css(techoVar) || '#8e9099';
+  function dibujarCasa(ctx, x, y, tipo, techoVar, puertaColor) {
+    const d = dimDe(tipo), techo = css(techoVar) || '#8e9099', puerta = puertaColor || PUERTA;
     const muroClaro = '#d7dae2', muroOscuro = '#a7abb6';
     const caja = cajaIso(x, y, d.hw, d.alto);
     // sombra de contacto en el suelo
@@ -191,10 +193,10 @@
     // dos caras de pared: izquierda más oscura (da volumen), derecha más clara
     poligono(ctx, caja.caraIzq, muroOscuro);
     poligono(ctx, caja.caraDer, muroClaro);
-    // puerta: sobre la cara derecha, apoyada en el borde inferior
-    ventanaEnCara(ctx, caja.caraDer, .38, .58, .26, .42);
-    ctx.fillStyle = PUERTA; // repinta la puerta encima (ventanaEnCara usa MARCO; la puerta es más oscura aún)
-    poligono(ctx, [puntoCara(caja.caraDer, .38, .58), puntoCara(caja.caraDer, .64, .58), puntoCara(caja.caraDer, .64, 1), puntoCara(caja.caraDer, .38, 1)], PUERTA);
+    // puerta: sobre la cara derecha, apoyada en el borde inferior — color propio por casa (variedad, no dato)
+    poligono(ctx, [puntoCara(caja.caraDer, .38, .58), puntoCara(caja.caraDer, .64, .58), puntoCara(caja.caraDer, .64, 1), puntoCara(caja.caraDer, .38, 1)], puerta);
+    const pomo = puntoCara(caja.caraDer, .59, .78);
+    ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillRect(Math.round(pomo.x), Math.round(pomo.y), 1, 1.3);
     // ventanas: una por cara
     ventanaEnCara(ctx, caja.caraIzq, .28, .2, .32, .3);
     ventanaEnCara(ctx, caja.caraDer, .38, .1, .3, .28);
@@ -215,6 +217,27 @@
       poligono(ctx, [pico, caja.right, caja.bot], techo);
       // caballete + una pincelada de luz en el faldón derecho
       ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pico.x, pico.y); ctx.lineTo(caja.bot.x, caja.bot.y); ctx.stroke();
+    }
+  }
+
+  /* pasto + sendero de piedra hasta la puerta — el color entra por el suelo, no solo por el techo */
+  function dibujarSuelo(ctx, W, H, groundY, puertaX) {
+    ctx.fillStyle = '#182018'; ctx.fillRect(0, 0, W, H);
+    const pasto = ctx.createLinearGradient(0, groundY - 6, 0, H);
+    pasto.addColorStop(0, '#33452f'); pasto.addColorStop(1, '#25321f');
+    ctx.fillStyle = pasto; ctx.fillRect(0, groundY - 6, W, H - groundY + 6);
+    // textura: matas de pasto deterministas
+    for (let i = 0; i < 14; i++) {
+      const gx = (i * 37 + 11) % W, gy = groundY - 4 + ((i * 53) % (H - groundY + 2));
+      ctx.fillStyle = i % 2 ? '#3d5236' : '#2c3c27';
+      ctx.fillRect(gx, gy, 2, 1);
+    }
+    // sendero de losetas hasta la puerta
+    const pasos = 4;
+    for (let i = 0; i < pasos; i++) {
+      const t = i / (pasos - 1), py = groundY + 3 + t * (H - groundY - 5);
+      const px = lerp(puertaX, W / 2, t * .3) + (i % 2 ? 3 : -3);
+      ctx.fillStyle = '#8a8574'; ctx.beginPath(); ctx.ellipse(px, py, 3.4, 2, 0, 0, 7); ctx.fill();
     }
   }
 
@@ -256,125 +279,106 @@
     $('#leyenda').append(casasWrap, gente);
   })();
 
-  /* ══════════════════ un pueblo (canvas) por comuna ══════════════════ */
+  /* ══════════════════ una parcela (canvas propio) por hogar, en grilla ══════════════════
+     Diseño anterior: una sola calle angosta por comuna, escalada a 100% de ancho — con pantallas
+     grandes la fila se aplanaba a una tira larga y delgada (poca altura fija repartida entre
+     muchas casas). Ahora cada hogar tiene su propio lote de tamaño fijo, así la escala no depende
+     de cuántas casas haya al lado ni del ancho de la pantalla. */
   const porComuna = {};
   D.hogares.forEach(h => (porComuna[h.comuna] ??= []).push(h));
   const barrios = $('#barrios');
-  const SPACING = 92, MARGIN = 46, GROUND = 76, ZONE_H = 96;
+  const TW = 132, TH = 122, GROUND = 96;   // ancho/alto de la parcela, línea de suelo
 
   Object.entries(porComuna).forEach(([comuna, hogares]) => {
     const sec = document.createElement('section'); sec.className = 'barrio';
     const nDivC = hogares.filter(h => h.diverge).length;
     sec.innerHTML = `<h2 class="title-l">${comuna} <span class="n">${hogares.length}</span></h2>
       <p class="body-s muted">${nDivC} de ${hogares.length} con divergencia a los 24 meses · ${hogares.reduce((a, h) => a + h.integrantes.length, 0)} integrantes</p>
-      <div class="zona"></div>`;
-    const zona = sec.querySelector('.zona');
-    const cv = document.createElement('canvas'); zona.append(cv);
-    const ctx = cv.getContext('2d');
-
-    const W = MARGIN * 2 + hogares.length * SPACING;
-    cv.width = W; cv.height = ZONE_H;
-    cv.style.minWidth = Math.round(W * 1.35) + 'px';
+      <div class="casas"></div>`;
+    const grid = sec.querySelector('.casas');
     const tinte = COMUNA_TINT[comuna] || '--viz-neutral';
 
-    const casas = hogares.map((h, i) => {
-      const cx = MARGIN + i * SPACING + SPACING / 2;
-      return { h, x: cx, y: GROUND, w: anchoCasa(h.tipo_vivienda), hh: altoCasa(h.tipo_vivienda), tipo: h.tipo_vivienda };
-    });
+    hogares.forEach((h, hi) => {
+      const parcela = document.createElement('div'); parcela.className = 'parcela';
+      const cv = document.createElement('canvas'); cv.width = TW; cv.height = TH; parcela.append(cv);
+      grid.append(parcela);
+      const ctx = cv.getContext('2d');
+      const cx = TW / 2;
+      const puertaColor = PUERTAS[Math.floor(hash(hi * 17 + comuna.length) * PUERTAS.length)];
 
-    // árboles decorativos deterministas — tono neutro para no competir con el color de comuna
-    const arboles = [];
-    for (let i = 0; i <= hogares.length; i++) {
-      if (hash(i * 7 + 3) < .5) arboles.push({ x: MARGIN + i * SPACING + (hash(i * 11) < .5 ? -SPACING / 2 + 10 : SPACING / 2 - 10) });
-    }
-
-    // integrantes: caminan a nivel de suelo, en la vereda frente a su casa
-    let seq = 0;
-    const agentes = [];
-    hogares.forEach((h, i) => {
-      const casa = casas[i];
-      h.integrantes.forEach(p => {
+      // integrantes: caminan a nivel de suelo, en el patio frente a su casa. Ropa con variedad
+      // propia (no codifica nada) — el techo sigue siendo la seña de comuna.
+      let seq = hi * 97;
+      const agentes = h.integrantes.map(p => {
         seq++;
-        const homeX = casa.x + (hash(seq * 13) - .5) * (SPACING - 26);
-        const homeY = GROUND - hash(seq * 17) * 4;
-        agentes.push({
-          hogar: h, tramo: p.tramo_edad, etiqueta: p.etiqueta, casa,
+        const homeX = cx + (hash(seq * 13) - .5) * (TW - 30);
+        const homeY = GROUND - hash(seq * 17) * 3;
+        return {
+          hogar: h, tramo: p.tramo_edad, etiqueta: p.etiqueta,
           homeX, homeY, x: homeX, y: homeY, tx: homeX, ty: homeY,
           estado: 'quieto', proximo: performance.now() + hash(seq * 23) * 3000,
-          color: css(tinte) || '#8e9099', fase: hash(seq * 29) * 1000
-        });
+          color: ROPA[Math.floor(hash(seq * 43) * ROPA.length)], fase: hash(seq * 29) * 1000
+        };
       });
-    });
+      const casa = { h, x: cx, y: GROUND, w: anchoCasa(h.tipo_vivienda), hh: altoCasa(h.tipo_vivienda), tipo: h.tipo_vivienda };
 
-    function limites(a) {
-      return { minX: a.casa.x - SPACING / 2 + 10, maxX: a.casa.x + SPACING / 2 - 10, minY: GROUND - 6, maxY: GROUND };
-    }
+      function limites() { return { minX: 10, maxX: TW - 10, minY: GROUND - 5, maxY: GROUND }; }
 
-    function dibujar(t) {
-      ctx.clearRect(0, 0, W, ZONE_H);
-      ctx.fillStyle = css('--md-surface-container') || '#1b1e24';
-      ctx.fillRect(0, GROUND + 1, W, ZONE_H - GROUND - 1);
-      ctx.fillStyle = css('--md-outline-variant') || '#33333a';
-      ctx.fillRect(0, GROUND, W, 1);
-      ctx.globalAlpha = .5;
-      arboles.forEach(ar => {
-        ctx.fillStyle = '#6b4a2f'; ctx.fillRect(ar.x - 1, GROUND - 9, 2, 9);
-        ctx.fillStyle = css('--viz-neutral') || '#44474e';
-        ctx.beginPath(); ctx.arc(ar.x, GROUND - 12, 6, 0, 7); ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-      casas.forEach(c => dibujarCasa(ctx, c.x, c.y, c.tipo, tinte));
-      agentes.forEach(a => dibujarPersona(ctx, a.x, a.y, a.tramo, a.color, t + a.fase, a.estado === 'quieto'));
-    }
-
-    let ultimo = 0;
-    function tick(t) {
-      if (!reduce && t - ultimo > 40) {
-        ultimo = t;
-        agentes.forEach(a => {
-          if (a.estado === 'quieto') {
-            if (t > a.proximo) {
-              const b = limites(a);
-              a.tx = Math.max(b.minX, Math.min(b.maxX, a.homeX + (hash((seq = seq + 1) * 31) - .5) * 30));
-              a.ty = Math.max(b.minY, Math.min(b.maxY, a.homeY + (hash(seq * 37) - .5) * 4));
-              a.estado = 'caminando';
-            }
-          } else {
-            const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy);
-            if (d < .5) { a.estado = 'quieto'; a.proximo = t + 1200 + hash(seq * 41) * 2600; }
-            else { const v = Math.min(d, .4); a.x += dx / d * v; a.y += dy / d * v; }
-          }
-        });
-        dibujar(t);
+      function dibujar(t) {
+        dibujarSuelo(ctx, TW, TH, GROUND, cx);
+        dibujarCasa(ctx, casa.x, casa.y, casa.tipo, tinte, puertaColor);
+        agentes.forEach(a => dibujarPersona(ctx, a.x, a.y, a.tramo, a.color, t + a.fase, a.estado === 'quieto'));
       }
-      requestAnimationFrame(tick);
-    }
-    dibujar(0);
-    if (!reduce) requestAnimationFrame(tick);
 
-    /* ── interacción: hover muestra ficha corta, clic abre el registro completo del hogar ── */
-    function bajo(px, py) {
-      const r = cv.getBoundingClientRect(), sx = cv.width / r.width, sy = cv.height / r.height;
-      const x = (px - r.left) * sx, y = (py - r.top) * sy;
-      let mejor = null, mejorD = 13;
-      agentes.forEach(a => { const centroY = a.y - altoPersona(a.tramo) / 2; const dd = Math.hypot(a.x - x, centroY - y); if (dd < mejorD) { mejorD = dd; mejor = { tipo: 'persona', a }; } });
-      if (mejor) return mejor;
-      for (const c of casas) { if (x >= c.x - c.w / 2 && x <= c.x + c.w / 2 && y >= c.y - c.hh && y <= c.y) return { tipo: 'casa', c }; }
-      return null;
-    }
-    cv.addEventListener('pointermove', e => {
-      const b = bajo(e.clientX, e.clientY);
-      if (!b) { hideTT(); cv.style.cursor = 'default'; return; }
-      cv.style.cursor = 'pointer';
-      if (b.tipo === 'persona') showTT(e, `<div class="tt-sub">${b.a.etiqueta}</div><div class="body-s">${b.a.hogar.id} · ${b.a.hogar.comuna}</div>`);
-      else showTT(e, `<div class="tt-sub">${b.c.h.id}</div><div class="body-s">${b.c.h.tenencia.replace('_', ' ')} · ${b.c.h.tipo_vivienda}</div>`);
-    });
-    cv.addEventListener('pointerleave', hideTT);
-    cv.addEventListener('click', e => {
-      const b = bajo(e.clientX, e.clientY);
-      if (!b) return;
-      hideTT();
-      if (b.tipo === 'persona') abrir(b.a.hogar, b.a.etiqueta); else abrir(b.c.h);
+      let ultimo = 0;
+      function tick(t) {
+        if (!reduce && t - ultimo > 40) {
+          ultimo = t;
+          agentes.forEach(a => {
+            if (a.estado === 'quieto') {
+              if (t > a.proximo) {
+                const b = limites();
+                a.tx = Math.max(b.minX, Math.min(b.maxX, a.homeX + (hash((seq = seq + 1) * 31) - .5) * 34));
+                a.ty = Math.max(b.minY, Math.min(b.maxY, a.homeY + (hash(seq * 37) - .5) * 4));
+                a.estado = 'caminando';
+              }
+            } else {
+              const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy);
+              if (d < .5) { a.estado = 'quieto'; a.proximo = t + 1200 + hash(seq * 41) * 2600; }
+              else { const v = Math.min(d, .4); a.x += dx / d * v; a.y += dy / d * v; }
+            }
+          });
+          dibujar(t);
+        }
+        requestAnimationFrame(tick);
+      }
+      dibujar(0);
+      if (!reduce) requestAnimationFrame(tick);
+
+      /* ── interacción: hover muestra ficha corta, clic abre el registro completo del hogar ── */
+      function bajo(px, py) {
+        const r = cv.getBoundingClientRect(), sx = cv.width / r.width, sy = cv.height / r.height;
+        const x = (px - r.left) * sx, y = (py - r.top) * sy;
+        let mejor = null, mejorD = 13;
+        agentes.forEach(a => { const centroY = a.y - altoPersona(a.tramo) / 2; const dd = Math.hypot(a.x - x, centroY - y); if (dd < mejorD) { mejorD = dd; mejor = { tipo: 'persona', a }; } });
+        if (mejor) return mejor;
+        if (x >= casa.x - casa.w / 2 && x <= casa.x + casa.w / 2 && y >= casa.y - casa.hh && y <= casa.y) return { tipo: 'casa', c: casa };
+        return null;
+      }
+      cv.addEventListener('pointermove', e => {
+        const b = bajo(e.clientX, e.clientY);
+        if (!b) { hideTT(); cv.style.cursor = 'default'; return; }
+        cv.style.cursor = 'pointer';
+        if (b.tipo === 'persona') showTT(e, `<div class="tt-sub">${b.a.etiqueta}</div><div class="body-s">${b.a.hogar.id} · ${b.a.hogar.comuna}</div>`);
+        else showTT(e, `<div class="tt-sub">${b.c.h.id}</div><div class="body-s">${b.c.h.tenencia.replace('_', ' ')} · ${b.c.h.tipo_vivienda}</div>`);
+      });
+      cv.addEventListener('pointerleave', hideTT);
+      cv.addEventListener('click', e => {
+        const b = bajo(e.clientX, e.clientY);
+        if (!b) return;
+        hideTT();
+        if (b.tipo === 'persona') abrir(b.a.hogar, b.a.etiqueta); else abrir(b.c.h);
+      });
     });
 
     barrios.append(sec);
