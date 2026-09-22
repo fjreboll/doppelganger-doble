@@ -3,7 +3,7 @@
 No es una sonda nueva (no confundir con la "sonda B" de alucinación sintética que ya nombra
 pipeline/README.md § Viabilidad): es una vista distinta sobre los mismos datos de 03_doble.py.
 
-Referencia de interfaz: "Generative Agents" (Park et al. 2023, Stanford — la demo "Smallville").
+Referencia de interfaz: "Generative Agents" (Park et al. 2023, Stanford).
 Se toma la mecánica (un pueblo de personajes inspeccionables, uno por uno) y se descarta lo que no
 aplica aquí: no hay LLM generando comportamiento ni diálogo. Cada personaje es un hogar sintético
 real de la simulación (estatuto caso_compuesto, igual que en el resto del sitio) y su "memoria" es
@@ -21,7 +21,7 @@ análogo (no el CSE-RSH real).
 import json, pandas as pd, numpy as np
 from comun import *
 
-N_MUESTRA = 28  # orden de magnitud de los 25 agentes de Smallville; no hay una razón para más
+N_MUESTRA = 28  # orden de magnitud suficiente para cubrir comuna×tenencia sin ser una curiosidad estadística
 SITIO = RAIZ.parent / "vecindario"
 SITIO.mkdir(exist_ok=True)
 rng = np.random.default_rng(SEMILLA + 15)
@@ -65,8 +65,8 @@ muestra = pd.concat(elegidos).reset_index(drop=True) if elegidos else h.sample(N
 # (tramos de edad del hogar). Es la única desagregación por persona que existe — el pipeline no
 # simula ingreso ni divergencia por integrante, solo por hogar. Se genera a t0 (única composición
 # etaria calculada); numper_t24 (total, sin desagregar) ya se muestra aparte en el panel.
-TRAMOS_EDAD = [("0_14", "niño/a", 0, 14), ("15_29", "joven", 15, 29), ("30_44", "adulto", 30, 44),
-               ("45_64", "adulto (45-64)", 45, 64), ("65", "adulto mayor", 65, None)]
+TRAMOS_EDAD = [("0_14", "niño/a", 0, 14), ("15_29", "joven", 15, 29), ("30_44", "adulto joven", 30, 44),
+               ("45_64", "adulto", 45, 64), ("65", "adulto mayor", 65, None)]
 # tramo al estilo del corte RSH (0-40/41-50/.../91-100) pero sobre el PERCENTIL DEL REGISTRO
 # análogo de este proyecto — no es el tramo CSE-RSH real (ver pipeline/README.md § Homologación).
 CORTES_TRAMO = [(0, 40, "0-40"), (40, 50, "41-50"), (50, 60, "51-60"), (60, 70, "61-70"),

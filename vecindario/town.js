@@ -27,7 +27,10 @@
   const COMUNA_TINT = { 'Santiago': '--viz-1', 'La Pintana': '--viz-2', 'Las Condes': '--viz-3', 'Puente Alto': '--viz-4' };
   const ROPA = ['#c96a4b', '#4a7bab', '#c9a33f', '#8a5a8f', '#5c8f5c', '#b5673f'];   // variedad decorativa, no codifica nada
   const PUERTAS = ['#5c4530', '#3d5a4d', '#4a3d5c', '#6b4530'];
-  const ETIQUETA_TRAMO = { '0_14': 'niño/a', '15_29': 'joven', '30_44': 'adulto', '45_64': '45-64', '65': 'mayor' };
+  const ETIQUETA_TRAMO = { '0_14': 'niño/a', '15_29': 'joven', '30_44': 'adulto joven', '45_64': 'adulto', '65': 'adulto mayor' };
+  // orden explícito: '65' es una clave numérica y JS la reordena sola al inicio del objeto
+  // (antes que '0_14', '15_29'…), por eso la leyenda salía con 45-64 fuera de secuencia
+  const ORDEN_TRAMO = ['0_14', '15_29', '30_44', '45_64', '65'];
   const hash = i => { let x = (i + 1) * 2654435761 >>> 0; x ^= x >>> 16; x = Math.imul(x, 2246822507) >>> 0; x ^= x >>> 13; return (x >>> 0) / 4294967296; };
 
   /* ── panel de detalle: el registro real del hogar (sin cambios respecto a la iteración anterior) ── */
@@ -118,6 +121,21 @@
     ctx.fillStyle = PIEL;
     ctx.fillRect(r(x - p.torW / 2 - p.armW), r(yy - p.torH + p.armH - 1), p.armW, 2);
     ctx.fillRect(r(x + p.torW / 2), r(yy - p.torH + p.armH - 1), p.armW, 2);
+    // accesorio por tramo: mochila (niño/a, joven) o bolso (adulto/adulto joven) al lado izquierdo,
+    // bastón (mayor) al derecho — refuerzo gráfico decorativo, no codifica ningún dato del registro
+    if (tramo === '0_14' || tramo === '15_29') {
+      const bw = tramo === '0_14' ? 4 : 5, bh = tramo === '0_14' ? 4.5 : 6;
+      const bx = x - p.torW / 2 - p.armW - bw - .5, by = yy - p.torH + 1;
+      ctx.fillStyle = 'color-mix(in srgb,' + color + ' 55%, black)'; ctx.fillRect(r(bx), r(by), bw, bh);
+      ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.fillRect(r(bx), r(by), bw, 1);
+      ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .6;
+      ctx.beginPath(); ctx.moveTo(bx + bw / 2, by); ctx.lineTo(bx + bw / 2, r(yy - p.torH - .5)); ctx.stroke();
+    } else if (tramo === '30_44' || tramo === '45_64') {
+      const bx = x - p.torW / 2 - p.armW - 3.5, by = yy - p.torH + p.armH - 3;
+      ctx.fillStyle = 'color-mix(in srgb,' + color + ' 55%, black)'; ctx.fillRect(r(bx), r(by), 3.5, 4.5);
+      ctx.strokeStyle = 'color-mix(in srgb,' + color + ' 40%, black)'; ctx.lineWidth = .7;
+      ctx.beginPath(); ctx.moveTo(bx + .5, by); ctx.lineTo(bx + 1.5, r(yy - p.torH)); ctx.stroke();
+    }
     yy -= p.torH;
     // cuello
     ctx.fillStyle = PIEL; ctx.fillRect(r(x - 1.5), r(yy - p.neckH), 3, p.neckH);
@@ -193,6 +211,15 @@
     }
     ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; ctx.strokeRect(r(x0) + .5, r(techoY0) + .5, d.w - 1, d.d - d.entrada - 1);
 
+    // banderín de comuna en la cumbrera: mismo color que el techo, para que la identidad de
+    // comuna se lea también como forma (asta + paño), no solo como tinte de un área grande
+    const astaX = r(x0 + d.w - 4), astaTop = techoY0 - 8;
+    ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(astaX, techoY0 + 1); ctx.lineTo(astaX, astaTop); ctx.stroke();
+    ctx.fillStyle = techo;
+    ctx.beginPath(); ctx.moveTo(astaX, astaTop); ctx.lineTo(astaX + 7, astaTop + 2.6); ctx.lineTo(astaX, astaTop + 5.2); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = .5; ctx.stroke();
+
     // franja de fachada: puerta + ventanas + alero
     ctx.fillStyle = muro; ctx.fillRect(r(x0), r(entradaY0), d.w, d.entrada);
     ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(r(x0), r(entradaY0), d.w, 1.4); // sombra del alero
@@ -207,24 +234,37 @@
     });
 
     if (tipo === 'departamento') {
-      // plaza pavimentada + jardinera — más sofisticado que pasto liso
+      // plaza pavimentada + jardinera + banca — más sofisticado que pasto liso
       ctx.fillStyle = '#8a8574'; ctx.fillRect(r(x - d.w * .32), r(y), d.w * .64, 4);
       ctx.fillStyle = '#3d5c3d'; ctx.fillRect(r(x - d.w * .4), r(y + 1), 5, 2.6);
       ctx.fillStyle = '#4f7a4f'; ctx.fillRect(r(x - d.w * .4) + 1, r(y), 3, 1.6);
+      const bxr = r(x + d.w * .18);
+      ctx.fillStyle = '#6b5a45'; ctx.fillRect(bxr, r(y + 1), 8, 1.4);
+      ctx.fillStyle = '#4a3d30'; ctx.fillRect(bxr, r(y + 2.4), 1, 1.6); ctx.fillRect(bxr + 7, r(y + 2.4), 1, 1.6);
     } else {
-      // seto recortado a ambos lados de la puerta
+      // seto recortado a ambos lados de la puerta + tendedero con ropa — vida cotidiana en el patio
       [x0 + 3, x0 + d.w - 6].forEach(hx => {
         ctx.fillStyle = '#3d5c3d'; ctx.beginPath(); ctx.ellipse(hx + 1.5, y + 1, 3.2, 2.4, 0, 0, 7); ctx.fill();
         ctx.fillStyle = '#4f7a4f'; ctx.beginPath(); ctx.ellipse(hx + .8, y, 1.8, 1.2, 0, 0, 7); ctx.fill();
       });
+      const ropaVar = ROPA[Math.abs(Math.round(x * 3 + y)) % ROPA.length];
+      const polo1 = x0 - 2, polo2 = x0 - 2 + 11, poloY = y - 5;
+      ctx.strokeStyle = '#5c5346'; ctx.lineWidth = .6;
+      ctx.beginPath(); ctx.moveTo(polo1, y + 1); ctx.lineTo(polo1, poloY); ctx.lineTo(polo2, poloY); ctx.lineTo(polo2, y + 1); ctx.stroke();
+      ctx.fillStyle = ropaVar; ctx.fillRect(r(polo1 + 1.5), r(poloY), 3, 3.4);
+      ctx.fillStyle = '#dfe3ee'; ctx.fillRect(r(polo1 + 5.5), r(poloY), 2.6, 4.2);
     }
   }
 
-  /* pasto + sendero de piedra hasta la puerta — el color entra por el suelo, no solo por el techo */
-  function dibujarSuelo(ctx, W, H, groundY, puertaX) {
+  /* pasto + sendero de piedra hasta la puerta — el color de comuna entra también por el suelo
+     (no solo por el techo/banderín), para que la parcela se lea como parte de su barrio incluso
+     vista sola, fuera de la sección agrupada por comuna. */
+  function dibujarSuelo(ctx, W, H, groundY, puertaX, tinteVar) {
+    const tinte = css(tinteVar) || '#5c6370';
     ctx.fillStyle = '#182018'; ctx.fillRect(0, 0, W, H);
     const pasto = ctx.createLinearGradient(0, groundY - 6, 0, H);
-    pasto.addColorStop(0, '#33452f'); pasto.addColorStop(1, '#25321f');
+    pasto.addColorStop(0, 'color-mix(in srgb,' + tinte + ' 18%, #33452f)');
+    pasto.addColorStop(1, 'color-mix(in srgb,' + tinte + ' 12%, #25321f)');
     ctx.fillStyle = pasto; ctx.fillRect(0, groundY - 6, W, H - groundY + 6);
     // textura: matas de pasto deterministas
     for (let i = 0; i < 14; i++) {
@@ -267,7 +307,7 @@
     const gente = document.createElement('div'); gente.className = 'grupo';
     gente.innerHTML = '<span>Integrantes por edad</span>';
     const fig2 = document.createElement('div'); fig2.className = 'figuritas'; gente.append(fig2);
-    Object.keys(ETIQUETA_TRAMO).forEach((tramo, i) => {
+    ORDEN_TRAMO.forEach((tramo, i) => {
       const H = altoPersona(tramo) + 6, W = 26;
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const w = document.createElement('div');
@@ -292,11 +332,11 @@
   Object.entries(porComuna).forEach(([comuna, hogares]) => {
     const sec = document.createElement('section'); sec.className = 'barrio';
     const nDivC = hogares.filter(h => h.diverge).length;
-    sec.innerHTML = `<h2 class="title-l">${comuna} <span class="n">${hogares.length}</span></h2>
-      <p class="body-s muted">${nDivC} de ${hogares.length} con divergencia a los 24 meses · ${hogares.reduce((a, h) => a + h.integrantes.length, 0)} integrantes</p>
+    const tinte = COMUNA_TINT[comuna] || '--viz-neutral';
+    sec.innerHTML = `<h2 class="title-l"><span class="tinte" style="background:var(${tinte})"></span>${comuna} <span class="n">${hogares.length}</span></h2>
+      <p class="body-s muted">${nDivC} de ${hogares.length} con divergencia a los 24 meses · ${hogares.reduce((a, h) => a + h.integrantes.length, 0)} integrantes — techo y banderín del mismo color</p>
       <div class="casas"></div>`;
     const grid = sec.querySelector('.casas');
-    const tinte = COMUNA_TINT[comuna] || '--viz-neutral';
 
     hogares.forEach((h, hi) => {
       const parcela = document.createElement('div'); parcela.className = 'parcela';
@@ -325,7 +365,7 @@
       function limites() { return { minX: 10, maxX: TW - 10, minY: GROUND - 5, maxY: GROUND }; }
 
       function dibujar(t) {
-        dibujarSuelo(ctx, TW, TH, GROUND, cx);
+        dibujarSuelo(ctx, TW, TH, GROUND, cx, tinte);
         dibujarCasa(ctx, casa.x, casa.y, casa.tipo, tinte, puertaColor);
         agentes.forEach(a => dibujarPersona(ctx, a.x, a.y, a.tramo, a.color, t + a.fase, a.estado === 'quieto'));
       }
