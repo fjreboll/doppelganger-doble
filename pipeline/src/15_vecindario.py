@@ -12,6 +12,11 @@ si la tiene. La selección de los N_MUESTRA hogares no es aleatoria simple: se e
 comuna y tenencia proporcional a su peso real, para que el conjunto "refleje los tipos de hogares
 que priman" en vez de ser una curiosidad estadística. La divergencia NO se usa como criterio de
 selección — a propósito: en la vida real tampoco se ve desde afuera cuál hogar diverge.
+
+Cada hogar exporta también sus "integrantes" (composición por tramo de edad, la única
+desagregación por persona que el pipeline calcula) para que el pueblo muestre un personaje por
+integrante, no uno por hogar — y un tramo al estilo del corte RSH sobre el percentil del registro
+análogo (no el CSE-RSH real).
 """
 import json, pandas as pd, numpy as np
 from comun import *
@@ -56,18 +61,38 @@ for cut, n_comuna in peso_comuna.items():
 muestra = pd.concat(elegidos).reset_index(drop=True) if elegidos else h.sample(N_MUESTRA, random_state=SEMILLA)
 
 # ───────── registro por hogar: solo campos que el pipeline realmente calculó ─────────
+# "Integrantes": la composición etaria de la CASEN v1 donante, tal como la describiría el RSH
+# (tramos de edad del hogar). Es la única desagregación por persona que existe — el pipeline no
+# simula ingreso ni divergencia por integrante, solo por hogar. Se genera a t0 (única composición
+# etaria calculada); numper_t24 (total, sin desagregar) ya se muestra aparte en el panel.
+TRAMOS_EDAD = [("0_14", "niño/a", 0, 14), ("15_29", "joven", 15, 29), ("30_44", "adulto", 30, 44),
+               ("45_64", "adulto (45-64)", 45, 64), ("65", "adulto mayor", 65, None)]
+# tramo al estilo del corte RSH (0-40/41-50/.../91-100) pero sobre el PERCENTIL DEL REGISTRO
+# análogo de este proyecto — no es el tramo CSE-RSH real (ver pipeline/README.md § Homologación).
+CORTES_TRAMO = [(0, 40, "0-40"), (40, 50, "41-50"), (50, 60, "51-60"), (60, 70, "61-70"),
+                (70, 80, "71-80"), (80, 90, "81-90"), (90, 100.001, "91-100")]
+
+def tramo_de(pct):
+    return next(t for lo, hi, t in CORTES_TRAMO if lo <= pct < hi)
+
 def deserializar(x):
     return json.loads(x) if isinstance(x, str) else x
 
 vecinos = []
 for _, r in muestra.iterrows():
+    integrantes = []
+    for clave, etiqueta, _, _ in TRAMOS_EDAD:
+        for _ in range(int(r[f"n{clave}"])):
+            integrantes.append(dict(tramo_edad=clave, etiqueta=etiqueta))
     perfil = dict(
         id=r.id, estatuto="caso_compuesto", comuna=COMUNAS_PILOTO[r.comuna_cut], comuna_cut=r.comuna_cut,
         tenencia=r.tenencia, hacinamiento=r.hacinamiento, tipo_vivienda=r.tipo_vivienda,
         numper_t0=int(r.numper_t0), numper_t24=int(r.numper_t24), se_mudo=bool(r.se_mudo),
+        integrantes=integrantes,
         ingreso_formal_t0=float(r.y_formal_t0), ingreso_informal_t0=float(r.y_informal_t0),
         ingreso_formal_t24=float(r.y_formal_t24), ingreso_informal_t24=float(r.y_informal_t24),
         registro=dict(prioriza=bool(r.resultado), percentil=round(float(r.percentil_reg), 1),
+                      tramo=tramo_de(float(r.percentil_reg)),
                       confianza=round(float(r.confianza), 3), antiguedad_meses=int(r.antiguedad_meses)))
     perfil["diverge"] = bool(pd.notna(r.divergencia_id))
     if perfil["diverge"]:

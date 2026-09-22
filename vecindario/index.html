@@ -9,24 +9,28 @@
 <link rel="stylesheet" href="../assets/m3.css?v=20260921">
 <script src="../iconos.js?v=20260921" defer></script>
 <style>
-  .wrap{max-width:920px}
+  .wrap{max-width:1080px}
   .hero{padding:40px 0 8px}
-  .hero p.body-l{max-width:680px;color:var(--md-on-surface-variant)}
+  .hero p.body-l{max-width:720px;color:var(--md-on-surface-variant)}
   .disclaimer{display:flex;gap:12px;padding:14px 16px;border-radius:var(--shape-m);background:var(--md-surface-container);margin:20px 0}
   .disclaimer .material-symbols-outlined{color:var(--md-primary);flex:none}
   .stats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 8px}
   .stats .chip{cursor:default}
 
-  .barrio{margin-top:36px}
+  .leyenda{display:flex;flex-wrap:wrap;gap:16px 28px;margin:20px 0;padding:14px 16px;border-radius:var(--shape-m);border:1px solid var(--md-outline-variant)}
+  .leyenda .grupo{display:flex;align-items:center;gap:10px}
+  .leyenda .grupo>span:first-child{font:500 12px/16px var(--font);color:var(--md-on-surface-variant);text-transform:uppercase;letter-spacing:.5px}
+  .leyenda .figuritas{display:flex;gap:8px;align-items:flex-end}
+  .leyenda canvas{image-rendering:pixelated}
+  .leyenda .figuritas div{display:flex;flex-direction:column;align-items:center;gap:3px}
+  .leyenda .figuritas span{font-size:10.5px;color:var(--md-on-surface-variant)}
+
+  .barrio{margin-top:40px}
   .barrio h2{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
   .barrio h2 .n{font:500 13px/1 var(--mono);color:var(--md-on-surface-variant);border:1px solid var(--md-outline-variant);border-radius:999px;padding:3px 9px}
-  .barrio p{margin:0 0 14px}
-  .casas{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
-  .casa-btn{all:unset;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:var(--shape-m);cursor:pointer;text-align:center}
-  .casa-btn:hover,.casa-btn:focus-visible{background:var(--md-surface-container)}
-  .casa-btn:focus-visible{outline:2px solid var(--md-primary);outline-offset:2px}
-  .casa-btn canvas{image-rendering:pixelated;width:56px;height:56px}
-  .casa-btn .id{font:500 11px/1 var(--mono);color:var(--md-on-surface-variant)}
+  .barrio p{margin:0 0 12px}
+  .zona{background:var(--md-surface-container-lowest);border-radius:var(--shape-m);overflow-x:auto;overflow-y:hidden}
+  .zona canvas{display:block;image-rendering:pixelated;cursor:pointer;width:100%;height:auto}
 
   #velo{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
   #velo.on{opacity:.5;pointer-events:auto}
@@ -55,12 +59,13 @@
 <main class="wrap">
   <section class="hero">
     <h1 class="display-s">Vecindario</h1>
-    <p class="body-l">28 hogares sintéticos de la muestra de <a href="../index.html">Santiago Gemelo Digital</a>, elegidos para que el conjunto refleje la proporción real de comuna y tenencia — no al azar simple. Cada uno se puede abrir por separado, como en la demo <cite>Generative Agents</cite> de Stanford (2023).</p>
+    <p class="body-l">28 hogares sintéticos de la muestra de <a href="../index.html">Santiago Gemelo Digital</a>, elegidos para que el conjunto refleje la proporción real de comuna y tenencia — no al azar simple. Cada integrante camina por su cuadra y se puede inspeccionar, como en la demo <cite>Generative Agents</cite> de Stanford (2023).</p>
     <div class="disclaimer">
       <span class="material-symbols-outlined">info</span>
-      <p class="body-m">A diferencia de esa demo, acá no hay un modelo de lenguaje generando comportamiento ni diálogo. Cada personaje es un <b>hogar sintético real</b> de la simulación del pipeline — <span class="mono" style="font-family:var(--mono)">caso_compuesto</span>, igual que en el resto del sitio — y lo que se abre al hacer clic es su registro real: composición, ingreso, decisión del registro y, si corresponde, la divergencia con sus seis campos. Ninguna persona real es representada.</p>
+      <p class="body-m">A diferencia de esa demo, acá no hay un modelo de lenguaje generando comportamiento ni diálogo: el movimiento es un vagabundeo simple, decorativo. Cada figura es un <b>integrante real</b> de un hogar sintético de la simulación — <span style="font-family:var(--mono)">caso_compuesto</span>, igual que en el resto del sitio — agrupados por su tramo de edad (la única desagregación por persona que el pipeline calcula; el ingreso y la divergencia son del hogar, no de cada integrante). Al hacer clic se abre el registro real de su hogar: composición, ingreso, tramo del registro análogo y, si corresponde, la divergencia con sus seis campos. Ninguna persona real es representada.</p>
     </div>
     <div class="stats" id="stats"></div>
+    <div class="leyenda" id="leyenda"></div>
   </section>
 
   <div id="barrios"></div>
@@ -70,6 +75,7 @@
   </section>
 </main>
 
+<div class="tooltip" id="tt" role="tooltip"></div>
 <div id="velo"></div>
 <aside id="panel" aria-hidden="true">
   <button class="icon-btn close" id="cerrar" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
