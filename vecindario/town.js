@@ -80,102 +80,141 @@
   const PIEL = '#e3c1a0';           // un solo tono, igual para todos: figuras estilizadas, no un dato del RSH
   const PUERTA = '#20242c';
   const MARCO = '#0f1116';
+  const lerp = (a, b, t) => a + (b - a) * t;
+  /* punto sobre una cara sheared (paralelogramo) en coordenadas paramétricas u,v ∈ [0,1] —
+     así una ventana "se apoya" en la pared isométrica en vez de quedar pegada sin perspectiva */
+  function puntoCara(c, u, v) {
+    const top = { x: lerp(c[0].x, c[1].x, u), y: lerp(c[0].y, c[1].y, u) };
+    const bot = { x: lerp(c[3].x, c[2].x, u), y: lerp(c[3].y, c[2].y, u) };
+    return { x: lerp(top.x, bot.x, v), y: lerp(top.y, bot.y, v) };
+  }
+  function poligono(ctx, pts, fill) { ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.closePath(); ctx.fill(); }
+  function ventanaEnCara(ctx, c, u, v, su, sv) {
+    poligono(ctx, [puntoCara(c, u, v), puntoCara(c, u + su, v), puntoCara(c, u + su, v + sv), puntoCara(c, u, v + sv)], MARCO);
+    const p0 = puntoCara(c, u, v), p1 = puntoCara(c, u + su, v);
+    ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = .6; ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+  }
 
-  /* persona: pies en (x,y), crece hacia arriba. niño/a en proporción "chibi" (cabeza más grande). */
-  const PROP_ADULTO = { legW: 3, legH: 8, torW: 11, torH: 8, armW: 3, armH: 7, headW: 9, headH: 8, hairH: 4 };
-  const PROP_NINO = { legW: 3, legH: 5, torW: 9, torH: 6, armW: 3, armH: 5, headW: 8, headH: 7, hairH: 3 };
+  /* persona: pies en (x,y), crece hacia arriba. niño/a en proporción "chibi" (cabeza más grande,
+     cuerpo más corto). Cuello, manos y zapatos aparte de piel/ropa para que no se lean como bloques. */
+  const PROP_ADULTO = { legW: 4, legH: 10, torW: 14, torH: 10, armW: 4, armH: 9, headW: 11, headH: 10, hairH: 5, neckH: 2 };
+  const PROP_NINO = { legW: 3, legH: 6, torW: 10, torH: 7, armW: 3, armH: 6, headW: 9, headH: 9, hairH: 4, neckH: 2 };
   function propDe(tramo) { return tramo === '0_14' ? PROP_NINO : PROP_ADULTO; }
-  function altoPersona(tramo) { const p = propDe(tramo); return p.legH + p.torH + p.headH + p.hairH; }
+  function altoPersona(tramo) { const p = propDe(tramo); return p.legH + p.torH + p.neckH + p.headH + p.hairH; }
 
   function dibujarPersona(ctx, x, y, tramo, color, fase = 0, quieto = true) {
     const p = propDe(tramo), r = v => Math.round(v);
-    const paso = quieto ? 0 : Math.sin(fase / 130) * 2.1;           // alternancia simple de piernas
+    const paso = quieto ? 0 : Math.sin(fase / 130) * 2.4;           // alternancia simple de piernas
     const pelo = tramo === '65' ? '#c9ccd6' : '#3a3f4a';
+    const sombra = 'rgba(0,0,0,.16)';
     let yy = y;
-    // piernas (una adelantada, otra atrasada — así se lee como caminar)
-    ctx.fillStyle = MARCO;
-    ctx.fillRect(r(x - p.legW - 1), r(yy - p.legH + Math.max(0, -paso)), p.legW, p.legH - Math.max(0, -paso));
-    ctx.fillRect(r(x + 1), r(yy - p.legH + Math.max(0, paso)), p.legW, p.legH - Math.max(0, paso));
+    // sombra de contacto (ancla la figura al suelo)
+    ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(x, y + 1, p.torW / 2.2, 1.6, 0, 0, 7); ctx.fill();
+    // zapatos + piernas (una adelantada, otra atrasada — así se lee como caminar)
+    const oi = Math.max(0, -paso), od = Math.max(0, paso);
+    ctx.fillStyle = '#2b2320';
+    ctx.fillRect(r(x - p.legW - 1), r(yy - 2 + oi), p.legW, 2);
+    ctx.fillRect(r(x + 1), r(yy - 2 + od), p.legW, 2);
+    ctx.fillStyle = '#33363f';
+    ctx.fillRect(r(x - p.legW - 1), r(yy - p.legH + oi), p.legW, p.legH - 2 - oi);
+    ctx.fillRect(r(x + 1), r(yy - p.legH + od), p.legW, p.legH - 2 - od);
     yy -= p.legH;
-    // torso
+    // torso (con una franja más oscura al costado, igual que en las casas: volumen sin color nuevo)
+    ctx.fillStyle = color; ctx.fillRect(r(x - p.torW / 2), r(yy - p.torH), p.torW, p.torH);
+    ctx.fillStyle = sombra; ctx.fillRect(r(x + p.torW / 2 - 3), r(yy - p.torH), 3, p.torH);
+    // brazos + manos
     ctx.fillStyle = color;
-    ctx.fillRect(r(x - p.torW / 2), r(yy - p.torH), p.torW, p.torH);
-    // brazos (piel)
+    ctx.fillRect(r(x - p.torW / 2 - p.armW), r(yy - p.torH + 1), p.armW, p.armH - 2);
+    ctx.fillRect(r(x + p.torW / 2), r(yy - p.torH + 1), p.armW, p.armH - 2);
     ctx.fillStyle = PIEL;
-    ctx.fillRect(r(x - p.torW / 2 - p.armW), r(yy - p.torH + 1), p.armW, p.armH);
-    ctx.fillRect(r(x + p.torW / 2), r(yy - p.torH + 1), p.armW, p.armH);
+    ctx.fillRect(r(x - p.torW / 2 - p.armW), r(yy - p.torH + p.armH - 1), p.armW, 2);
+    ctx.fillRect(r(x + p.torW / 2), r(yy - p.torH + p.armH - 1), p.armW, 2);
     yy -= p.torH;
+    // cuello
+    ctx.fillStyle = PIEL; ctx.fillRect(r(x - 1.5), r(yy - p.neckH), 3, p.neckH);
+    yy -= p.neckH;
     // cabeza
-    ctx.fillStyle = PIEL;
-    ctx.fillRect(r(x - p.headW / 2), r(yy - p.headH), p.headW, p.headH);
-    // ojos (dos píxeles oscuros, dan frente/lectura de "cara")
+    ctx.fillStyle = PIEL; ctx.fillRect(r(x - p.headW / 2), r(yy - p.headH), p.headW, p.headH);
+    ctx.fillStyle = sombra; ctx.fillRect(r(x + p.headW / 2 - 2.5), r(yy - p.headH), 2.5, p.headH); // sombra de mejilla
+    // cejas + ojos + boca
+    ctx.fillStyle = pelo === '#c9ccd6' ? '#9a9da6' : '#20242c';
+    ctx.fillRect(r(x - p.headW / 2 + 1.5), r(yy - p.headH / 2 - 2.6), 2, .8);
+    ctx.fillRect(r(x + p.headW / 2 - 3.5), r(yy - p.headH / 2 - 2.6), 2, .8);
     ctx.fillStyle = MARCO;
-    ctx.fillRect(r(x - p.headW / 2 + 1.5), r(yy - p.headH / 2 - 1), 1.5, 1.5);
-    ctx.fillRect(r(x + p.headW / 2 - 3), r(yy - p.headH / 2 - 1), 1.5, 1.5);
+    ctx.fillRect(r(x - p.headW / 2 + 1.7), r(yy - p.headH / 2 - 1), 1.6, 1.6);
+    ctx.fillRect(r(x + p.headW / 2 - 3.3), r(yy - p.headH / 2 - 1), 1.6, 1.6);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(r(x - 1.5), r(yy - p.headH / 2 + 2.4), 3, .8);
     yy -= p.headH;
-    // pelo
+    // pelo, con un mechón lateral para que no se lea como un casco plano
     ctx.fillStyle = pelo;
     ctx.fillRect(r(x - p.headW / 2 - .5), r(yy - p.hairH), p.headW + 1, p.hairH);
+    ctx.fillRect(r(x - p.headW / 2 - .5), r(yy), 2.4, 3.2);
+    ctx.fillRect(r(x + p.headW / 2 - 1.9), r(yy), 2.4, 3.2);
     if (tramo === '65') { // bastón: distingue al adulto mayor sin depender del color
       ctx.fillStyle = '#8a6a45';
-      ctx.fillRect(r(x + p.torW / 2 + p.armW + 1), r(y - p.legH - 2), 1.5, p.legH + 4);
+      ctx.fillRect(r(x + p.torW / 2 + p.armW + 1), r(y - p.legH - 2), 1.6, p.legH + 4);
+      ctx.fillStyle = '#5c4530'; ctx.fillRect(r(x + p.torW / 2 + p.armW), r(y - p.legH - 3), 3, 1.6);
     }
   }
 
-  const casita = t => ({
-    casa: { wallW: 26, wallH: 22, roofH: 15, roofOver: 4 },
-    departamento: { wallW: 30, wallH: 46, roofH: 6, roofOver: 3 },
-    otra: { wallW: 24, wallH: 18, roofH: 10, roofOver: 3 }
-  }[t] || { wallW: 24, wallH: 18, roofH: 10, roofOver: 3 });
-  function anchoCasa(tipo) { const c = casita(tipo); return c.wallW + c.roofOver * 2; }
-  function altoCasa(tipo) { const c = casita(tipo); return c.wallH + c.roofH; }
+  /* ══════════════════ edificios en plano isométrico (2 caras + techo), estilo Habbo/Tibia ══════════════════ */
+  const DIM = {
+    casa: { hw: 15, alto: 17, techo: 11 },
+    departamento: { hw: 17, alto: 34, techo: 0 },
+    otra: { hw: 14, alto: 15, techo: 8 }
+  };
+  function dimDe(tipo) { return DIM[tipo] || DIM.otra; }
+  function anchoCasa(tipo) { return dimDe(tipo).hw * 2; }
+  function altoCasa(tipo) { const d = dimDe(tipo); return d.alto + d.hw + d.techo; } // pared + medio rombo + techo
 
-  /* casa: base en (x,y). departamento: mismo esqueleto, techo plano y más ventanas (edificio). */
+  /* caja isométrica: (cx, groundY) es el punto donde la esquina frontal toca el piso. hw = medio ancho
+     del rombo superior (proporción clásica 2:1: medio-alto = hw/2). Devuelve las 3 caras visibles. */
+  function cajaIso(cx, groundY, hw, alto) {
+    const hv = hw / 2, cyCentro = groundY - alto - hv;
+    const top = { x: cx, y: cyCentro - hv }, bot = { x: cx, y: cyCentro + hv };
+    const left = { x: cx - hw, y: cyCentro }, right = { x: cx + hw, y: cyCentro };
+    const botE = { x: bot.x, y: bot.y + alto }, leftE = { x: left.x, y: left.y + alto }, rightE = { x: right.x, y: right.y + alto };
+    return {
+      diamante: [top, right, bot, left],
+      caraIzq: [left, bot, botE, leftE],   // orden u,v: (0,0)(1,0)(1,1)(0,1) — para puntoCara
+      caraDer: [bot, right, rightE, botE],
+      top, bot, left, right, botE, leftE, rightE
+    };
+  }
+
   function dibujarCasa(ctx, x, y, tipo, techoVar) {
-    const c = casita(tipo), techo = css(techoVar) || '#8e9099', muro = '#cdd0da', r = v => Math.round(v);
-    const wx0 = x - c.wallW / 2, wy0 = y - c.wallH;
-    // cimiento
-    ctx.fillStyle = MARCO; ctx.fillRect(r(wx0 - 1), r(y - 2), c.wallW + 2, 2);
-    // muro
-    ctx.fillStyle = muro; ctx.fillRect(r(wx0), r(wy0), c.wallW, c.wallH);
-    // sombra lateral (da volumen sin agregar un color nuevo)
-    ctx.fillStyle = 'rgba(0,0,0,.14)'; ctx.fillRect(r(wx0 + c.wallW - 4), r(wy0), 4, c.wallH);
+    const d = dimDe(tipo), techo = css(techoVar) || '#8e9099';
+    const muroClaro = '#d7dae2', muroOscuro = '#a7abb6';
+    const caja = cajaIso(x, y, d.hw, d.alto);
+    // sombra de contacto en el suelo
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, y + 1, d.hw + 3, 3, 0, 0, 7); ctx.fill();
+    // dos caras de pared: izquierda más oscura (da volumen), derecha más clara
+    poligono(ctx, caja.caraIzq, muroOscuro);
+    poligono(ctx, caja.caraDer, muroClaro);
+    // puerta: sobre la cara derecha, apoyada en el borde inferior
+    ventanaEnCara(ctx, caja.caraDer, .38, .58, .26, .42);
+    ctx.fillStyle = PUERTA; // repinta la puerta encima (ventanaEnCara usa MARCO; la puerta es más oscura aún)
+    poligono(ctx, [puntoCara(caja.caraDer, .38, .58), puntoCara(caja.caraDer, .64, .58), puntoCara(caja.caraDer, .64, 1), puntoCara(caja.caraDer, .38, 1)], PUERTA);
+    // ventanas: una por cara
+    ventanaEnCara(ctx, caja.caraIzq, .28, .2, .32, .3);
+    ventanaEnCara(ctx, caja.caraDer, .38, .1, .3, .28);
 
     if (tipo === 'departamento') {
-      // techo plano
-      ctx.fillStyle = techo; ctx.fillRect(r(x - c.wallW / 2 - c.roofOver), r(wy0 - c.roofH), c.wallW + c.roofOver * 2, c.roofH);
-      // ventanas: grilla — tantas filas como el alto permite, dos columnas
-      const filas = Math.max(2, Math.floor((c.wallH - 10) / 9));
-      for (let f = 0; f < filas; f++) {
-        const wy = wy0 + 6 + f * 9;
-        [wx0 + 4, wx0 + c.wallW - 4 - 5].forEach(wx => {
-          ctx.fillStyle = MARCO; ctx.fillRect(r(wx), r(wy), 5, 5);
-          ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(r(wx), r(wy), 5, 1);
-        });
+      // techo plano: el rombo superior, tintado por comuna; una fila extra de ventanas por piso
+      poligono(ctx, caja.diamante, techo);
+      const pisos = Math.max(2, Math.round(d.alto / 11));
+      for (let f = 1; f < pisos; f++) {
+        const v = f / pisos;
+        ventanaEnCara(ctx, caja.caraIzq, .22, v - .08, .26, .16);
+        ventanaEnCara(ctx, caja.caraDer, .5, v - .08, .24, .16);
       }
-      // puerta
-      ctx.fillStyle = PUERTA; ctx.fillRect(r(x - 4), r(y - 10), 8, 10);
     } else {
-      // techo a dos aguas
-      ctx.fillStyle = techo;
-      ctx.beginPath();
-      ctx.moveTo(x, wy0 - c.roofH);
-      ctx.lineTo(wx0 - c.roofOver, wy0 + 2);
-      ctx.lineTo(wx0 + c.wallW + c.roofOver, wy0 + 2);
-      ctx.closePath(); ctx.fill();
-      // chimenea
-      ctx.fillStyle = '#8a6a45';
-      ctx.fillRect(r(x + c.wallW * .18), r(wy0 - c.roofH * .55), 4, c.roofH * .55 + 2);
-      // puerta
-      ctx.fillStyle = PUERTA; ctx.fillRect(r(x - 3.5), r(y - 11), 7, 11);
-      ctx.fillStyle = '#c9ccd6'; ctx.fillRect(r(x + 2), r(y - 6), 1, 1.4); // picaporte
-      // ventanas
-      [wx0 + 4, wx0 + c.wallW - 9].forEach(wx => {
-        const wy = wy0 + c.wallH * .32;
-        ctx.fillStyle = MARCO; ctx.fillRect(r(wx), r(wy), 5, 5);
-        ctx.fillStyle = muro; ctx.fillRect(r(wx + 2.2), r(wy), .8, 5); ctx.fillRect(r(wx), r(wy + 2.2), 5, .8);
-        ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(r(wx), r(wy), 5, 1);
-      });
+      // techo a cuatro aguas: dos triángulos desde un vértice sobre el rombo hasta sus bordes
+      const pico = { x: x, y: caja.top.y - d.techo };
+      poligono(ctx, [pico, caja.left, caja.bot], 'color-mix(in srgb,' + techo + ' 72%, black)');
+      poligono(ctx, [pico, caja.right, caja.bot], techo);
+      // caballete + una pincelada de luz en el faldón derecho
+      ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pico.x, pico.y); ctx.lineTo(caja.bot.x, caja.bot.y); ctx.stroke();
     }
   }
 
