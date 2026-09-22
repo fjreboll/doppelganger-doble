@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doppelgänger · Vecindario</title>
+<meta name="description" content="28 hogares sintéticos de la muestra, inspeccionables uno por uno — mecánica de Generative Agents (Stanford), sin IA generando comportamiento: cada registro es real.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23415f91'/><circle cx='12' cy='16' r='6' fill='none' stroke='white' stroke-width='2.5'/><circle cx='20' cy='16' r='6' fill='none' stroke='%23d6e3ff' stroke-width='2.5' stroke-dasharray='3 2'/></svg>">
+<link rel="stylesheet" href="../assets/m3.css?v=20260921">
+<script src="../iconos.js?v=20260921" defer></script>
+<style>
+  .wrap{max-width:920px}
+  .hero{padding:40px 0 8px}
+  .hero p.body-l{max-width:680px;color:var(--md-on-surface-variant)}
+  .disclaimer{display:flex;gap:12px;padding:14px 16px;border-radius:var(--shape-m);background:var(--md-surface-container);margin:20px 0}
+  .disclaimer .material-symbols-outlined{color:var(--md-primary);flex:none}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 8px}
+  .stats .chip{cursor:default}
+
+  .barrio{margin-top:36px}
+  .barrio h2{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
+  .barrio h2 .n{font:500 13px/1 var(--mono);color:var(--md-on-surface-variant);border:1px solid var(--md-outline-variant);border-radius:999px;padding:3px 9px}
+  .barrio p{margin:0 0 14px}
+  .casas{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+  .casa-btn{all:unset;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:var(--shape-m);cursor:pointer;text-align:center}
+  .casa-btn:hover,.casa-btn:focus-visible{background:var(--md-surface-container)}
+  .casa-btn:focus-visible{outline:2px solid var(--md-primary);outline-offset:2px}
+  .casa-btn canvas{image-rendering:pixelated;width:56px;height:56px}
+  .casa-btn .id{font:500 11px/1 var(--mono);color:var(--md-on-surface-variant)}
+
+  #velo{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
+  #velo.on{opacity:.5;pointer-events:auto}
+  #panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--md-surface-container-lowest);
+    box-shadow:var(--md-elev-2);transform:translateX(100%);transition:transform .22s;z-index:41;overflow-y:auto;padding:20px}
+  #panel.on{transform:translateX(0)}
+  #panel .close{float:right}
+  #panel h3{margin:12px 0 2px}
+  #panel .sub{color:var(--md-on-surface-variant);margin:0 0 16px}
+  .f6{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 10px;font-size:13.5px;margin:10px 0;overflow-wrap:anywhere}
+  .f6 b{color:var(--md-on-surface-variant);font-weight:500}
+  .divcard{border-left:3px solid var(--viz-critical);padding-left:12px;margin-top:18px}
+  .divcard .tag{display:inline-block;font:500 11px/16px var(--mono);padding:1px 8px;border-radius:9px;background:color-mix(in srgb,var(--viz-critical) 20%,transparent);color:var(--viz-critical);margin-bottom:8px}
+  .nodiv{margin-top:18px;color:var(--md-on-surface-variant);display:flex;gap:8px;align-items:center}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--md-outline-variant);font-size:14px}
+  .kv b{font-weight:500}
+</style>
+</head>
+<body>
+<header class="top-app-bar" id="appbar">
+  <a class="icon-btn" href="../index.html" aria-label="Volver a Santiago Gemelo Digital"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a class="brand" href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit"><span class="material-symbols-outlined">difference</span><span class="title title-l">Doppelgänger · Vecindario</span></a>
+  <a class="icon-btn" href="https://github.com/fjreboll/doppelganger-doble/blob/main/pipeline/src/15_vecindario.py" aria-label="Código en GitHub"><span class="material-symbols-outlined">code</span></a>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1 class="display-s">Vecindario</h1>
+    <p class="body-l">28 hogares sintéticos de la muestra de <a href="../index.html">Santiago Gemelo Digital</a>, elegidos para que el conjunto refleje la proporción real de comuna y tenencia — no al azar simple. Cada uno se puede abrir por separado, como en la demo <cite>Generative Agents</cite> de Stanford (2023).</p>
+    <div class="disclaimer">
+      <span class="material-symbols-outlined">info</span>
+      <p class="body-m">A diferencia de esa demo, acá no hay un modelo de lenguaje generando comportamiento ni diálogo. Cada personaje es un <b>hogar sintético real</b> de la simulación del pipeline — <span class="mono" style="font-family:var(--mono)">caso_compuesto</span>, igual que en el resto del sitio — y lo que se abre al hacer clic es su registro real: composición, ingreso, decisión del registro y, si corresponde, la divergencia con sus seis campos. Ninguna persona real es representada.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <div id="barrios"></div>
+
+  <section style="padding-bottom:64px">
+    <p class="body-s muted">La selección no usa la divergencia como criterio: en la vida real tampoco se distingue desde afuera cuál hogar diverge del registro. Código: <span style="font-family:var(--mono)">pipeline/src/15_vecindario.py</span>.</p>
+  </section>
+</main>
+
+<div id="velo"></div>
+<aside id="panel" aria-hidden="true">
+  <button class="icon-btn close" id="cerrar" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
+  <div id="panel-body"></div>
+</aside>
+
+<script src="town.js"></script>
+</body>
+</html>
