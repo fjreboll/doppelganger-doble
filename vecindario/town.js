@@ -83,19 +83,6 @@
   const PUERTA = '#20242c';
   const MARCO = '#0f1116';
   const lerp = (a, b, t) => a + (b - a) * t;
-  /* punto sobre una cara sheared (paralelogramo) en coordenadas paramétricas u,v ∈ [0,1] —
-     así una ventana "se apoya" en la pared isométrica en vez de quedar pegada sin perspectiva */
-  function puntoCara(c, u, v) {
-    const top = { x: lerp(c[0].x, c[1].x, u), y: lerp(c[0].y, c[1].y, u) };
-    const bot = { x: lerp(c[3].x, c[2].x, u), y: lerp(c[3].y, c[2].y, u) };
-    return { x: lerp(top.x, bot.x, v), y: lerp(top.y, bot.y, v) };
-  }
-  function poligono(ctx, pts, fill) { ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.closePath(); ctx.fill(); }
-  function ventanaEnCara(ctx, c, u, v, su, sv) {
-    poligono(ctx, [puntoCara(c, u, v), puntoCara(c, u + su, v), puntoCara(c, u + su, v + sv), puntoCara(c, u, v + sv)], MARCO);
-    const p0 = puntoCara(c, u, v), p1 = puntoCara(c, u + su, v);
-    ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = .6; ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
-  }
 
   /* persona: pies en (x,y), crece hacia arriba. niño/a en proporción "chibi" (cabeza más grande,
      cuerpo más corto). Cuello, manos y zapatos aparte de piel/ropa para que no se lean como bloques. */
@@ -159,64 +146,77 @@
     }
   }
 
-  /* ══════════════════ edificios en plano isométrico (2 caras + techo), estilo Habbo/Tibia ══════════════════ */
+  /* ══════════════════ edificios en plano cenital (vista aérea), con detalle de techo y entrada ══════════════════
+     El isométrico (dos caras de pared) no se leía bien a este tamaño de parcela — vuelve a un plano
+     desde arriba, como en Zelda/Stardew Valley/SimCity clásico: el techo es lo que domina la lectura,
+     con textura propia, y una franja de fachada al pie (puerta + ventanas) para que no sea un
+     rectángulo plano. (x, y) es el punto medio del borde frontal de esa franja. */
   const DIM = {
-    casa: { hw: 15, alto: 17, techo: 11 },
-    departamento: { hw: 17, alto: 34, techo: 0 },
-    otra: { hw: 14, alto: 15, techo: 8 }
+    casa: { w: 32, d: 34, entrada: 11 },
+    departamento: { w: 46, d: 46, entrada: 14 },
+    otra: { w: 28, d: 28, entrada: 9 }
   };
   function dimDe(tipo) { return DIM[tipo] || DIM.otra; }
-  function anchoCasa(tipo) { return dimDe(tipo).hw * 2; }
-  function altoCasa(tipo) { const d = dimDe(tipo); return d.alto + d.hw + d.techo; } // pared + medio rombo + techo
-
-  /* caja isométrica: (cx, groundY) es el punto donde la esquina frontal toca el piso. hw = medio ancho
-     del rombo superior (proporción clásica 2:1: medio-alto = hw/2). Devuelve las 3 caras visibles. */
-  function cajaIso(cx, groundY, hw, alto) {
-    const hv = hw / 2, cyCentro = groundY - alto - hv;
-    const top = { x: cx, y: cyCentro - hv }, bot = { x: cx, y: cyCentro + hv };
-    const left = { x: cx - hw, y: cyCentro }, right = { x: cx + hw, y: cyCentro };
-    const botE = { x: bot.x, y: bot.y + alto }, leftE = { x: left.x, y: left.y + alto }, rightE = { x: right.x, y: right.y + alto };
-    return {
-      diamante: [top, right, bot, left],
-      caraIzq: [left, bot, botE, leftE],   // orden u,v: (0,0)(1,0)(1,1)(0,1) — para puntoCara
-      caraDer: [bot, right, rightE, botE],
-      top, bot, left, right, botE, leftE, rightE
-    };
-  }
+  function anchoCasa(tipo) { return dimDe(tipo).w + 6; }   // +6: margen del jardín/plaza
+  function altoCasa(tipo) { return dimDe(tipo).d + 4; }
 
   function dibujarCasa(ctx, x, y, tipo, techoVar, puertaColor) {
-    const d = dimDe(tipo), techo = css(techoVar) || '#8e9099', puerta = puertaColor || PUERTA;
-    const muroClaro = '#d7dae2', muroOscuro = '#a7abb6';
-    const caja = cajaIso(x, y, d.hw, d.alto);
-    // sombra de contacto en el suelo
-    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, y + 1, d.hw + 3, 3, 0, 0, 7); ctx.fill();
-    // dos caras de pared: izquierda más oscura (da volumen), derecha más clara
-    poligono(ctx, caja.caraIzq, muroOscuro);
-    poligono(ctx, caja.caraDer, muroClaro);
-    // puerta: sobre la cara derecha, apoyada en el borde inferior — color propio por casa (variedad, no dato)
-    poligono(ctx, [puntoCara(caja.caraDer, .38, .58), puntoCara(caja.caraDer, .64, .58), puntoCara(caja.caraDer, .64, 1), puntoCara(caja.caraDer, .38, 1)], puerta);
-    const pomo = puntoCara(caja.caraDer, .59, .78);
-    ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillRect(Math.round(pomo.x), Math.round(pomo.y), 1, 1.3);
-    // ventanas: una por cara
-    ventanaEnCara(ctx, caja.caraIzq, .28, .2, .32, .3);
-    ventanaEnCara(ctx, caja.caraDer, .38, .1, .3, .28);
+    const d = dimDe(tipo), techo = css(techoVar) || '#8e9099', puerta = puertaColor || PUERTA, r = v => Math.round(v);
+    const muro = '#cfd2dc', x0 = x - d.w / 2, techoY0 = y - d.d, entradaY0 = y - d.entrada;
+    const oscuro = c => 'color-mix(in srgb,' + c + ' 78%, black)', claro = c => 'color-mix(in srgb,' + c + ' 85%, white)';
+
+    // sombra proyectada (da profundidad sin isométrico: el sol pega de arriba-izquierda)
+    ctx.fillStyle = 'rgba(0,0,0,.32)'; ctx.fillRect(x0 + 3, techoY0 + 3, d.w, y - techoY0);
+
+    // techo: dos aguas visto desde arriba (cumbrera + dos faldones de sombra distinta) en casa;
+    // losa con instalaciones en departamento
+    ctx.fillStyle = techo; ctx.fillRect(r(x0), r(techoY0), d.w, d.d - d.entrada);
+    if (tipo === 'departamento') {
+      // losa técnica: costuras de membrana + un par de equipos de aire y una caseta de acceso
+      ctx.strokeStyle = 'rgba(0,0,0,.22)'; ctx.lineWidth = .7;
+      for (let fy = techoY0 + 6; fy < entradaY0 - 3; fy += 7) { ctx.beginPath(); ctx.moveTo(x0 + 2, fy); ctx.lineTo(x0 + d.w - 2, fy); ctx.stroke(); }
+      ctx.fillStyle = oscuro(techo); ctx.fillRect(r(x0 + d.w * .18), r(techoY0 + d.d * .18), 7, 5); ctx.fillRect(r(x0 + d.w * .62), r(techoY0 + d.d * .5), 6, 6);
+      ctx.fillStyle = '#787d87'; ctx.fillRect(r(x0 + d.w * .6), r(techoY0 + d.d * .18), 8, 6);
+      ctx.fillStyle = claro(techo); ctx.fillRect(r(x0 + d.w * .61), r(techoY0 + d.d * .19), 8, 1.4);
+    } else {
+      // cumbrera + dos faldones (izq. sombra, der. luz) — el gesto de un techo a dos aguas visto de arriba
+      const midX = x;
+      ctx.fillStyle = oscuro(techo); ctx.fillRect(r(x0), r(techoY0), d.w / 2, d.d - d.entrada);
+      ctx.fillStyle = claro(techo); ctx.fillRect(r(midX), r(techoY0), d.w / 2, d.d - d.entrada);
+      ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(midX, techoY0); ctx.lineTo(midX, entradaY0); ctx.stroke();
+      // tejas: líneas perpendiculares a la cumbrera
+      ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = .6;
+      for (let fy = techoY0 + 5; fy < entradaY0; fy += 5) { ctx.beginPath(); ctx.moveTo(x0 + 1, fy); ctx.lineTo(x0 + d.w - 1, fy); ctx.stroke(); }
+      // chimenea
+      ctx.fillStyle = '#6b5a4a'; ctx.fillRect(r(x0 + d.w * .72), r(techoY0 + d.d * .22), 5, 5);
+      ctx.fillStyle = '#2a231c'; ctx.fillRect(r(x0 + d.w * .72) + 1, r(techoY0 + d.d * .22) + 1, 3, 3);
+    }
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; ctx.strokeRect(r(x0) + .5, r(techoY0) + .5, d.w - 1, d.d - d.entrada - 1);
+
+    // franja de fachada: puerta + ventanas + alero
+    ctx.fillStyle = muro; ctx.fillRect(r(x0), r(entradaY0), d.w, d.entrada);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(r(x0), r(entradaY0), d.w, 1.4); // sombra del alero
+    const puertaW = tipo === 'departamento' ? 9 : 6;
+    ctx.fillStyle = puerta; ctx.fillRect(r(x - puertaW / 2), r(entradaY0 + 2), puertaW, d.entrada - 2);
+    ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillRect(r(x + puertaW / 2 - 2), r(entradaY0 + d.entrada / 2), 1, 1.3);
+    const ventanas = tipo === 'departamento' ? [x0 + 7, x0 + d.w - 7 - 5, x0 + d.w / 2 - 2.5] : [x0 + 5, x0 + d.w - 5 - 4.5];
+    ventanas.forEach(wx => {
+      if (Math.abs(wx + 4 - x) < puertaW) return; // no pisar la puerta
+      ctx.fillStyle = MARCO; ctx.fillRect(r(wx), r(entradaY0 + 3), 4.5, d.entrada - 5);
+      ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.fillRect(r(wx), r(entradaY0 + 3), 4.5, 1);
+    });
 
     if (tipo === 'departamento') {
-      // techo plano: el rombo superior, tintado por comuna; una fila extra de ventanas por piso
-      poligono(ctx, caja.diamante, techo);
-      const pisos = Math.max(2, Math.round(d.alto / 11));
-      for (let f = 1; f < pisos; f++) {
-        const v = f / pisos;
-        ventanaEnCara(ctx, caja.caraIzq, .22, v - .08, .26, .16);
-        ventanaEnCara(ctx, caja.caraDer, .5, v - .08, .24, .16);
-      }
+      // plaza pavimentada + jardinera — más sofisticado que pasto liso
+      ctx.fillStyle = '#8a8574'; ctx.fillRect(r(x - d.w * .32), r(y), d.w * .64, 4);
+      ctx.fillStyle = '#3d5c3d'; ctx.fillRect(r(x - d.w * .4), r(y + 1), 5, 2.6);
+      ctx.fillStyle = '#4f7a4f'; ctx.fillRect(r(x - d.w * .4) + 1, r(y), 3, 1.6);
     } else {
-      // techo a cuatro aguas: dos triángulos desde un vértice sobre el rombo hasta sus bordes
-      const pico = { x: x, y: caja.top.y - d.techo };
-      poligono(ctx, [pico, caja.left, caja.bot], 'color-mix(in srgb,' + techo + ' 72%, black)');
-      poligono(ctx, [pico, caja.right, caja.bot], techo);
-      // caballete + una pincelada de luz en el faldón derecho
-      ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pico.x, pico.y); ctx.lineTo(caja.bot.x, caja.bot.y); ctx.stroke();
+      // seto recortado a ambos lados de la puerta
+      [x0 + 3, x0 + d.w - 6].forEach(hx => {
+        ctx.fillStyle = '#3d5c3d'; ctx.beginPath(); ctx.ellipse(hx + 1.5, y + 1, 3.2, 2.4, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#4f7a4f'; ctx.beginPath(); ctx.ellipse(hx + .8, y, 1.8, 1.2, 0, 0, 7); ctx.fill();
+      });
     }
   }
 
