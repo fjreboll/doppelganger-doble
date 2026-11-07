@@ -12,3 +12,6 @@ done
 [ -f ../data/raw/13.geojson ] && [ -d ../../../doppelganger-encargo ] && python3 10_banner_sitia.py ../data/raw/13.geojson ../../../doppelganger-encargo/assets/banner_grid_sitia.json || echo "── 10_banner_sitia omitido"
 # tipo de vivienda (casa/departamento) del donante y su reparto en la clasificación (requiere 09)
 [ -f ../data/raw/casen2022.parquet ] && python3 13_vivienda_clasificacion.py ../.. || echo "── 13_vivienda omitido"
+# sensibilidad (anexo) y vecindario: dependen de 03; se regeneran para que no queden desfasados del modelo
+python3 14_sensibilidad.py
+python3 15_vecindario.py

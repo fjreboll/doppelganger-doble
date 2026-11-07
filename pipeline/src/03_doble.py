@@ -41,7 +41,8 @@ H["p_sit"], H["p_reg"] = pct_sit(H.e_sit.values), pct_reg(H.e_reg.values)
 # confianza que el propio sistema podría estimar: P(clasificación situada = registrada | vigintil del registro)
 H["vig"] = np.minimum((H.p_reg // 5).astype(int), 19)
 H["acierto"] = ((H.p_sit < UMBRAL) == (H.p_reg < UMBRAL)).astype(float)
-conf_vig = H.groupby("vig").apply(lambda d: np.average(d.acierto, weights=d.expr)).reindex(range(20)).fillna(1.0).values
+_w = H.acierto * H.expr
+conf_vig = (_w.groupby(H.vig).sum() / H.expr.groupby(H.vig).sum()).reindex(range(20)).fillna(1.0).values
 
 # ───────── simulación de 24 meses ─────────
 N = len(S)
@@ -62,7 +63,7 @@ perdio = np.zeros(N, bool); monto_perdido = np.zeros(N)
 comuna_arr = S.cut_comuna.map(COMUNAS_PILOTO).values
 serie = []
 def medir(mes):
-    pr = pct_reg(eq(hist_formal.mean(axis=0) + oreg + pen + sub, numper_reg)) < UMBRAL
+    pr = (pct_reg(eq(hist_formal.mean(axis=0) + oreg + pen + sub, numper_reg)) < UMBRAL) & dom_vigente
     el = (pct_sit(eq(formal + informal + oreg + otros + pen + sub, numper)) < UMBRAL) & ~se_mudo
     d = pd.DataFrame(dict(comuna=comuna_arr, div=pr != el, fp=pr & ~el, fn=~pr & el, mud=se_mudo, desact=numper_reg != numper))
     for c, g in d.groupby("comuna"):
@@ -96,7 +97,8 @@ p_sit_t0, p_reg_t0, p_sit, p_reg = pct_sit(e_sit_t0), pct_reg(e_reg_t0), pct_sit
 # contrafactual: el registro con datos al día (sin rezago) — para distinguir desactualización de no-registrabilidad
 p_reg_aldia = pct_reg(eq(formal + oreg + pen + sub, numper))
 
-prior_reg = (p_reg < UMBRAL)  # el registro prioriza según su domicilio registrado (mudanzas no actualizadas incluidas)
+# el registro prioriza según su domicilio registrado: incluye mudanzas no actualizadas, excluye las ya actualizadas
+prior_reg = (p_reg < UMBRAL) & dom_vigente
 elegible_sit = (p_sit < UMBRAL) & ~se_mudo      # programa comunal: requiere residir en la comuna
 conf = conf_vig[np.minimum((p_reg // 5).astype(int), 19)]
 antig = MESES - ult_act
@@ -140,7 +142,7 @@ for i in range(N):
                "confianza": round(float(conf[i]), 3), "umbral": UMBRAL, "procedencia": PROC, "antiguedad_meses": int(antig[i]),
                "numper_registrado": int(numper_reg[i])}),
             "prioriza prestación" if prior_reg[i] else "no prioriza",
-            j({"percentil_situado": round(float(p_sit[i]), 1), "reside_en_comuna": bool(~se_mudo[i]), "numper_real": int(numper[i]),
+            j({"percentil_situado": round(float(p_sit[i]), 1), "reside_en_comuna": not bool(se_mudo[i]), "numper_real": int(numper[i]),
                "ingreso_informal_t24": float(round(informal[i], -2)), "eventos_mes": eventos}),
             j({"tipo": "hogar_sintetico", "id": S.id[i], "comuna": COMUNAS_PILOTO[S.cut_comuna[i]], "numper": int(numper[i]),
                "tenencia": S.tenencia[i]}),

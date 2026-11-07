@@ -9,7 +9,8 @@ def check(nombre, ok, detalle):
     checks.append(dict(prueba=nombre, ok=bool(ok), detalle=detalle)); print(("OK   " if ok else "FALLA"), nombre, "·", detalle)
 
 # 1 · integridad
-check("Integridad referencial (PRAGMA foreign_key_check)", len(q("PRAGMA foreign_key_check")) == 0, f"{len(q('PRAGMA foreign_key_check'))} violaciones")
+fk = q("PRAGMA foreign_key_check")
+check("Integridad referencial (PRAGMA foreign_key_check)", len(fk) == 0, f"{len(fk)} violaciones")
 check("Toda fuente declara plano de evidencia y vía de acceso", q("select count(*) from fuente where plano_evidencia is null or via_acceso is null")[0][0] == 0, f"{q('select count(*) from fuente')[0][0]} fuentes")
 
 # 2 · costura obligatoria y seis campos
@@ -31,10 +32,13 @@ S0 = pd.read_parquet(INTERIM / "hogares_sinteticos_t0.parquet")[["id", "y_otros_
 h = pd.read_sql("select h.*, d.resultado, d.divergencia_id from hogar_sintetico h join decision d on d.hogar_id=h.id", con).merge(S0, on="id")
 p_sit = ps(eq(h.y_formal_t24 + h.y_informal_t24 + h.y_otros_reg + h.y_otros_no_reg + h.y_pension + h.y_subsidio, h.numper_t24).values)
 eleg = (p_sit < 40) & (h.se_mudo == 0)
-diverge = eleg != (h.resultado == 1)
+diverge = eleg != (h.resultado == 1)  # resultado ya incorpora domicilio_reg_vigente (ver prueba siguiente)
 sin_bitacora = int((diverge & h.divergencia_id.isna()).sum()); bitacora_sin_div = int((~diverge & h.divergencia_id.notna()).sum())
 check("Ninguna decisión divergente sin entrada en el registro (recomputado)", sin_bitacora == 0 and bitacora_sin_div < 0.001 * len(h),
       f"divergentes sin bitácora: {sin_bitacora}; entradas sin divergencia recomputada: {bitacora_sin_div} (redondeo de ingresos)")
+
+prior_sin_dom = q("select count(*) from hogar_sintetico h join decision d on d.hogar_id=h.id where d.resultado=1 and h.domicilio_reg_vigente=0")[0][0]
+check("El registro no prioriza hogares cuyo domicilio ya actualizó fuera de la comuna", prior_sin_dom == 0, f"{prior_sin_dom} casos")
 
 # 4 · población sintética
 M = pd.read_csv(SALIDAS / "calibracion_poblacion.csv")

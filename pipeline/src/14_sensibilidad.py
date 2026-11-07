@@ -142,7 +142,7 @@ def correr(param, semilla):
     formal_reg = hist_formal.mean(axis=0)
     p_sit = pct_sit(eq(formal + informal + oreg + otros + pen + sub, numper))
     p_reg = pct_reg(eq(formal_reg + oreg + pen + sub, numper_reg))
-    prior = p_reg < UMBRAL
+    prior = (p_reg < UMBRAL) & dom_vigente  # excluye domicilios ya actualizados (mismo criterio que 03)
     eleg = (p_sit < UMBRAL) & ~se_mudo
     div = prior != eleg
     d = pd.DataFrame(dict(comuna=comuna_arr, div=div, fp=prior & ~eleg, fn=~prior & eleg))

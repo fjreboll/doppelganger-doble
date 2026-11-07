@@ -40,6 +40,7 @@ for cut, nom in COMUNAS_PILOTO.items():
     d = don.expc.values.astype(float)
     d *= T[0] / d.sum()
     w, err = calibrar(d, X, T)
+    assert err < 1e-6, f"calibración no convergió en {nom}: error {err:.2e}"
     g = w / d
     N = int(o["hogares", "total"])
     idx = rng.choice(len(don), size=N, p=w / w.sum())
