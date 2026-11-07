@@ -44,5 +44,6 @@ autorregistro(con, componente="A·vivienda", que_registro="Tipo de vivienda de l
               metrica=out, alcance="4 comunas piloto, mes 24", deteccion="Holdout contra Censo 2024 V5 (no usado en la calibración)",
               correccion="Agregar tipo de vivienda como margen de calibración si el análisis depende de él")
 con.commit()
+exportar_autorregistro_a(con, SITIO)
 for c, fs in out.items():
     print(c); print(pd.DataFrame(fs).T.round(3))

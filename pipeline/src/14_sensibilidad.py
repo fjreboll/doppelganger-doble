@@ -218,3 +218,4 @@ autorregistro(con, componente="A·sensibilidad",
     correccion="Calibrar las probabilidades de deriva con ENE-INE, seguro de cesantía y actualizaciones efectivas del RSH",
     deteccion="Ejecución del script 14_sensibilidad.py sobre la misma base")
 con.commit()
+exportar_autorregistro_a(con)

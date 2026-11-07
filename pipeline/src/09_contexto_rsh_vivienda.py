@@ -11,7 +11,8 @@ from comun import *
 
 SINIM = Path(sys.argv[1] if len(sys.argv) > 1 else "/home/claude/src/sinim_info_municipal/datos/sinim_2019-2023.xlsx")
 V5 = RAW / "censo2024_tabulados" / "V5_Tipologias-de-viviendas-censadas.xlsx"
-SITIOS = [Path(p) for p in sys.argv[2:]] or [RAIZ.parent / "sitios" / "doppelganger-doble"]
+SITIOS = [Path(p) for p in sys.argv[2:]] or [RAIZ.parent]
+assert all(s.resolve().name != "doppelganger-encargo" for s in SITIOS), "09 escribe solo en el sitio A; el data.json de C es curado"
 TRAMOS = {4624: "0-40", 4625: "41-50", 4626: "51-60", 4627: "61-70", 4628: "71-80", 4629: "81-90", 4630: "91-100"}
 
 con = conectar()  # contexto_comunal vive en db/schema.sql (creada por 01_ingesta.py vía iniciar_db)

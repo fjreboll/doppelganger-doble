@@ -28,7 +28,8 @@ loc = rd("""select json_extract(afectado,'$.comuna') comuna, tipologia, locus, c
 acc = rd("select parametros, n_evaluados, n_positivas, n_divergencias, ejecutada_en from accion").iloc[0]
 casos = []
 for (t, l), _ in loc.groupby(["tipologia", "locus"]):
-    for r in rd(f"select * from divergencia where tipologia='{t}' and locus='{l}' order by random() limit 3").to_dict("records"):
+    grupo = rd(f"select * from divergencia where tipologia='{t}' and locus='{l}' order by id")
+    for r in grupo.sample(min(3, len(grupo)), random_state=SEMILLA).to_dict("records"):  # muestra reproducible
         for k in ["representacion", "ocurrido", "afectado", "formulacion"]:
             r[k] = json.loads(r[k])
         r.pop("creada_en"); casos.append(r)
@@ -40,7 +41,8 @@ datos_a = dict(
     calibracion=cal.round(5).to_dict("records"), validacion=val,
     autorregistro=rd("select componente, que_registro, efecto, inexactitud, correccion, deteccion from autorregistro where componente like 'A%' order by id").to_dict("records"),
     fuentes=rd("select id, nombre, institucion, anio_referencia, via_acceso, plano_evidencia, url, nota_homologacion from fuente where id in ('casen2022','censo2024_tab','sae2022','supuesto_poc')").to_dict("records"))
-(A / "data.json").write_text(json.dumps(limpio(datos_a), ensure_ascii=False, default=str, allow_nan=False))
+# A: se conservan las claves que agregan 09 (contexto) y 13 (vivienda_clasificacion)
+actualizar_json(A / "data.json", limpio(datos_a))
 
 # ── C · Grafo del encargo
 FAM = {"Institucion": "estado", "Unidad": "estado", "Programa": "programa", "Empresa": "privado", "Comite": "asesoria",
@@ -57,5 +59,8 @@ datos_c = dict(generado=HOY, nodos=obj.to_dict("records"), vinculos=vin.to_dict(
                fuentes=rd("select id, nombre, institucion, anio_referencia, fecha_publicacion, via_acceso, plano_evidencia, url, nota_homologacion from fuente where id not in ('casen2022','censo2024_tab','sae2022','supuesto_poc')").to_dict("records"),
                autorregistro=rd("select componente, que_registro, efecto, inexactitud, correccion, deteccion, metrica from autorregistro where componente like 'C%' order by id").to_dict("records"),
                ia_res=pd.read_csv(SALIDAS / "res_constituciones_ia_por_anio.csv").to_dict("records"))
-(C / "data.json").write_text(json.dumps(limpio(datos_c), ensure_ascii=False, default=str, allow_nan=False))
-print("A:", round((A / "data.json").stat().st_size / 1024), "KB · C:", round((C / "data.json").stat().st_size / 1024), "KB ·", len(casos), "casos")
+# C: el data.json publicado es curado (grafo ampliado, vida_dato, Oficio N.° 3736). El pipeline solo actualiza
+# CLAVES_PIPELINE_C; la exportación completa desde la base queda en salidas/ para comparar con lo publicado.
+(SALIDAS / "encargo_desde_base.json").write_text(json.dumps(limpio(datos_c), ensure_ascii=False, default=str, allow_nan=False, indent=1))
+actualizar_json(C / "data.json", limpio(datos_c), CLAVES_PIPELINE_C)
+print("A:", round((A / "data.json").stat().st_size / 1024), "KB · C: solo", ", ".join(CLAVES_PIPELINE_C), "·", len(casos), "casos")

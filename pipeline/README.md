@@ -6,11 +6,11 @@ Prueba de concepto para evaluar si el **registro público de divergencias algor�
 
 ```bash
 pip install pandas pyarrow duckdb openpyxl numpy
-bash run_all.sh          # 01 → 06, ~2 min; genera db/doppelganger.db (~360 MB) y salidas/
+bash run_all.sh          # 01 → 16, ~3 min; genera db/doppelganger.db (~360 MB), salidas/ y los archivos de los sitios
 ```
 
 Datos de entrada esperados en `data/raw/` (espejos públicos usados; ver tabla de fuentes):
-`casen2022.parquet`, `censo2024_tabulados/` (xlsx INE), `chile_hub/` (pobreza SAE 2022, RES).
+`casen2022.parquet`, `censo2024_tabulados/` (xlsx INE: D1, D5, H1, V3, V5), `chile_hub/` (`pobreza_comunal.json`, `empresas.parquet`), `sinim_2019-2023.xlsx` y `13.geojson` (caracena/chile-geojson).
 
 | Paso | Script | Qué hace |
 |---|---|---|
@@ -21,6 +21,17 @@ Datos de entrada esperados en `data/raw/` (espejos públicos usados; ver tabla d
 | 05 | `05_validar.py` | Auditoría independiente (13 pruebas) |
 | 06 | `06_vista.py` | Vista HTML autocontenida de evaluación |
 | — | `adaptadores/` | Mercado Público (API) e InfoLobby (CSV): **no ejecutados**, requieren red con acceso |
+
+## Qué escribe el pipeline en los sitios
+
+| Archivo | Lo escribe | Contenido curado a mano que no se toca |
+|---|---|---|
+| `doppelganger-doble/data.json` | 07 (claves propias), 09 `contexto`, 13 `vivienda_clasificacion`, 09/13/14 `autorregistro` | — (todo sale de la base) |
+| `doppelganger-encargo/data.json` | 07, **solo** `ia_res` y `tipos` (`CLAVES_PIPELINE_C` en `comun.py`) | grafo ampliado (89 nodos, 116 vínculos), `verificacion` de citas, `vida_dato`, Oficio N.° 3736, folios de transparencia |
+| `doppelganger-encargo/assets/banner_grid_sitia.json` | 10 y luego 12 (siempre juntos) | — |
+| `doppelganger-doble/vecindario/hogares.json` | 15 | — |
+
+La exportación completa del grafo desde la base queda en `salidas/encargo_desde_base.json` para comparar con lo publicado; no se copia al sitio. `16_verificar_sitios.py` (último paso de `run_all.sh`) compara cada archivo con el último commit de su repositorio y falla si desaparece una clave, un nodo, vínculo o fuente, `vida_dato` o las calles del banner. Antecedentes: 9f9d77f borró la vida del dato y los nodos curados (restituidos en 87848d2); una corrida de 10 sin 12 borró las calles (restituidas en 601a4d2).
 
 ## Base de datos común (`db/schema.sql`)
 
@@ -59,9 +70,9 @@ Hallazgos útiles para el argumento:
 
 **C · Grafo del encargo:** 53 objetos, 54 vínculos, 6 ausencias documentadas (protocolo de falsos positivos, proveedor en información institucional, plazos de retención, código de licitación, nómina del Comité de Ética, registro de divergencias). La resolución por nombre contra RES produce 78 coincidencias por subcadena para "SONDA" y ninguna resolución válida sin RUT: la fusión por nombre fabricaría vínculos falsos.
 
-## Validación (12/13)
+## Validación (13/14)
 
-Superadas: integridad referencial; costura en 559.440 decisiones; seis campos en todas las entradas; **auditoría recomputada: 0 decisiones divergentes sin bitácora**; márgenes Censo reproducidos (desvío máx. 1,08%); pobreza por ingresos dentro del IC SAE 2022 en las 4 comunas; privacidad (0,17% de hogares con ingresos idénticos al donante); grafo con fuente y cita en todo vínculo; personas solo en rol; grafo conexo; ninguna empresa fusionada sin RUT.
+Superadas: integridad referencial; costura en 559.440 decisiones; seis campos en todas las entradas; **auditoría recomputada: 0 decisiones divergentes sin bitácora**; ningún hogar con domicilio ya actualizado fuera de la comuna queda priorizado; márgenes Censo reproducidos (desvío máx. 1,08%); pobreza por ingresos dentro del IC SAE 2022 en las 4 comunas; privacidad (0,17% de hogares con ingresos idénticos al donante); grafo con fuente y cita en todo vínculo; personas solo en rol; grafo conexo; ninguna empresa fusionada sin RUT.
 **Fallida (se mantiene visible):** hacinamiento crítico en Santiago 2,8% sintético vs 5,4% Censo 2024. Probable cambio 2022→2024 no capturado por CASEN y diferencia vivienda/hogar; corrección: agregar hacinamiento como restricción o usar microdatos censales.
 
 ## Viabilidad
