@@ -44,18 +44,18 @@ Datos de entrada esperados en `data/raw/` (espejos públicos usados; ver tabla d
 
 | Comuna | Hogares | Prioriza registro | Elegible situado | Divergencia t0 | Divergencia t24 |
 |---|---:|---:|---:|---:|---:|
-| La Pintana | 53.951 | 58,2% | 55,4% | 29,2% | 29,9% |
-| Las Condes | 116.176 | 17,4% | 6,2% | 12,9% | 15,7% |
-| Puente Alto | 182.855 | 41,3% | 37,1% | 21,7% | 24,0% |
-| Santiago | 206.458 | 30,5% | 25,1% | 21,0% | 25,1% |
+| La Pintana | 53.951 | 57,2% | 55,4% | 29,2% | 28,9% |
+| Las Condes | 116.176 | 16,7% | 6,2% | 12,9% | 15,1% |
+| Puente Alto | 182.855 | 40,6% | 37,1% | 21,7% | 23,3% |
+| Santiago | 206.458 | 28,7% | 25,1% | 21,0% | 23,3% |
 
-Entradas en el registro: 130.038 (falso positivo por ingreso no registrable 57.865 · falso negativo por ingreso no registrable 20.376 · base desactualizada por movilidad 20.322 · falso negativo por posición relativa en el ranking 18.979 · desactualizada por rezago de ingreso formal 7.621 · por composición del hogar 4.874 · deriva de umbral 1).
+Entradas en el registro: 123.804 (corrida del 07-11-2026, tras excluir de la priorización los domicilios ya actualizados) (falso positivo por ingreso no registrable 57.865 · falso negativo por ingreso no registrable 20.376 · base desactualizada por movilidad 14.088 · falso negativo por posición relativa en el ranking 18.979 · desactualizada por rezago de ingreso formal 7.621 · por composición del hogar 4.874 · deriva de umbral 1).
 
 Hallazgos útiles para el argumento:
 1. **La costura mide lo que la interfaz oculta:** la confianza estimable por el propio sistema cae a 32–39% en los vigintiles contiguos al umbral (percentiles 40–50).
-2. **Divergencia sin escena, cuantificada:** en 24 meses la divergencia sube 0,7 a 4,1 p.p. sin que ninguna decisión cambie de forma visible; Santiago concentra desactualización (33% de sus divergencias) por movilidad residencial (41,6% de llegados en 5 años según Censo 2024).
+2. **Divergencia sin escena, cuantificada:** en 24 meses la divergencia sube 1,6 a 2,3 p.p. en Las Condes, Puente Alto y Santiago sin que ninguna decisión cambie de forma visible (en La Pintana baja 0,4 p.p.); Santiago concentra desactualización (28% de sus divergencias, 17% solo por movilidad) por movilidad residencial (41,6% de llegados en 5 años según Censo 2024).
 3. **Posición relativa:** 18.979 hogares plenamente formales quedan fuera de la priorización no por error propio sino porque la informalidad ajena, invisible al registro, los desplaza en el ranking. Es una divergencia sin culpable técnico, coherente con la simetría de la definición (2.1).
-4. **Estratificación territorial de la tipología:** en Las Condes el 70% de las divergencias son falsos positivos; en La Pintana se reparten entre falsos positivos y negativos (41/40%).
+4. **Estratificación territorial de la tipología:** en Las Condes el 72% de las divergencias son falsos positivos; en La Pintana se reparten entre falsos positivos y negativos (42/41%).
 
 **C · Grafo del encargo:** 53 objetos, 54 vínculos, 6 ausencias documentadas (protocolo de falsos positivos, proveedor en información institucional, plazos de retención, código de licitación, nómina del Comité de Ética, registro de divergencias). La resolución por nombre contra RES produce 78 coincidencias por subcadena para "SONDA" y ninguna resolución válida sin RUT: la fusión por nombre fabricaría vínculos falsos.
 

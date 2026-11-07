@@ -53,8 +53,8 @@ RES = str(RAW / "chile_hub" / "empresas.parquet")
 res_rows = []
 for oid, nom in con.execute("select id, nombre from objeto where tipo='Empresa'").fetchall():
     clave = nom.split(" S.A.")[0].upper()
-    n_sub = duckdb.sql(f"select count(*) from '{RES}' where upper(razon_social) like '%{clave}%'").fetchone()[0]
-    n = duckdb.sql(f"select count(*) from '{RES}' where regexp_matches(upper(razon_social), '(^|[^A-ZÁÉÍÓÚÑ]){clave}([^A-ZÁÉÍÓÚÑ]|$)')").fetchone()[0]
+    n_sub = duckdb.sql(f"select count(*) from '{RES}' where upper(razon_social) like '%{clave}%'").fetchall()[0][0]
+    n = duckdb.sql(f"select count(*) from '{RES}' where regexp_matches(upper(razon_social), '(^|[^A-ZÁÉÍÓÚÑ]){clave}([^A-ZÁÉÍÓÚÑ]|$)')").fetchall()[0][0]
     res_rows.append((oid, nom, n, n_sub))
     attrs = json.loads(con.execute("select atributos from objeto where id=?", (oid,)).fetchone()[0] or "{}")
     attrs["resolucion_RES"] = {"coincidencias_token": n, "coincidencias_subcadena": n_sub, "resuelta": False,

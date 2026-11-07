@@ -38,17 +38,17 @@ Tres escenarios de informalidad por tres semillas. El escenario base usa `p_info
 
 | Escenario | Semilla | Divergencia | Falso positivo | Falso negativo | La Pintana | Las Condes | Puente Alto | Santiago | Acierto simulado p40–p50 |
 |---|---|---|---|---|---|---|---|---|---|
-| informalidad baja | 20260916 | 22.9% | 13.8% | 9.1% | 29.5% | 15.4% | 23.6% | 24.8% | 45.8%–46.9% |
-| informalidad baja | 20261016 | 23.0% | 13.9% | 9.1% | 29.6% | 15.6% | 23.6% | 24.9% | 45.7%–46.9% |
-| informalidad baja | 20261117 | 23.0% | 13.9% | 9.1% | 29.5% | 15.6% | 23.6% | 24.9% | 45.3%–46.9% |
-| base | 20260916 | 23.2% | 14.6% | 8.7% | 29.9% | 15.7% | 24.0% | 25.1% | 47.3%–48.9% |
-| base | 20261016 | 23.3% | 14.6% | 8.7% | 29.9% | 15.7% | 24.0% | 25.3% | 47.0%–48.9% |
-| base | 20261117 | 23.4% | 14.7% | 8.7% | 29.8% | 15.8% | 24.1% | 25.3% | 46.7%–48.9% |
-| informalidad alta | 20260916 | 23.5% | 15.4% | 8.2% | 30.4% | 15.7% | 24.4% | 25.4% | 49.3%–51.5% |
-| informalidad alta | 20261016 | 23.6% | 15.4% | 8.2% | 30.4% | 15.7% | 24.5% | 25.6% | 49.0%–51.5% |
-| informalidad alta | 20261117 | 23.6% | 15.4% | 8.2% | 30.3% | 15.8% | 24.6% | 25.5% | 48.6%–51.6% |
+| informalidad baja | 20260916 | 21.8% | 12.7% | 9.1% | 28.5% | 14.8% | 22.9% | 23.0% | 45.8%–46.9% |
+| informalidad baja | 20261016 | 21.8% | 12.7% | 9.1% | 28.6% | 14.9% | 22.9% | 23.0% | 45.7%–46.9% |
+| informalidad baja | 20261117 | 21.9% | 12.7% | 9.1% | 28.5% | 15.0% | 22.9% | 23.1% | 45.3%–46.9% |
+| base | 20260916 | 22.1% | 13.5% | 8.7% | 28.9% | 15.1% | 23.3% | 23.3% | 47.3%–48.9% |
+| base | 20261016 | 22.2% | 13.5% | 8.7% | 28.9% | 15.1% | 23.3% | 23.4% | 47.0%–48.9% |
+| base | 20261117 | 22.2% | 13.5% | 8.7% | 28.8% | 15.2% | 23.4% | 23.4% | 46.7%–48.9% |
+| informalidad alta | 20260916 | 22.4% | 14.3% | 8.2% | 29.4% | 15.0% | 23.7% | 23.7% | 49.3%–51.5% |
+| informalidad alta | 20261016 | 22.5% | 14.3% | 8.2% | 29.4% | 15.1% | 23.7% | 23.6% | 49.0%–51.5% |
+| informalidad alta | 20261117 | 22.5% | 14.3% | 8.2% | 29.3% | 15.2% | 23.8% | 23.6% | 48.6%–51.6% |
 
-**Lectura.** La divergencia total se mueve entre 22,9% y 23,6% (±0,4 puntos porcentuales respecto del escenario base) y el orden entre comunas se mantiene en las nueve corridas. Lo que sí se mueve con el supuesto de informalidad es la composición del error: el falso positivo pasa de 13,8% a 15,4% y el falso negativo baja de 9,1% a 8,2%, con consecuencias de política distintas —priorizar a quien no lo necesita frente a excluir a quien sí—.
+**Lectura.** La divergencia total se mueve entre 21,8% y 22,5% (±0,4 puntos porcentuales respecto del escenario base) y el orden entre comunas se mantiene en las nueve corridas. Lo que sí se mueve con el supuesto de informalidad es la composición del error: el falso positivo pasa de 13,8% a 15,4% y el falso negativo baja de 9,1% a 8,2%, con consecuencias de política distintas —priorizar a quien no lo necesita frente a excluir a quien sí—.
 
 **Contraste con el dato real.** En la población sintética el acierto junto al umbral queda entre 45,3% y 51,6%, frente al 31,8%–39,3% que arroja la CASEN 2022. El modelo es conservador: subestima la confusión que el corte produce sobre hogares reales, porque su heterogeneidad de ingreso no registrable es menor que la observada.
 
