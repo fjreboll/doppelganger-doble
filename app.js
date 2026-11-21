@@ -90,7 +90,7 @@
     sel().forEach(c => {
       const r = D.resumen.find(x => x.comuna === c), { raw, n } = composicion(r);
       const div = document.createElement('div'); div.className = 'waffle';
-      div.innerHTML = `<h4 class="title-m">${c}</h4><p class="body-s muted" style="margin-bottom:8px">${nf.format(r.hogares)} hogares · divergencia ${pct(r.divergencia)}</p>`;
+      div.innerHTML = `<h4 class="title-m">${c}</h4><p class="body-s muted" style="margin-bottom:8px">${nf.format(r.hogares)} hogares · discrepancia ${pct(r.divergencia)}</p>`;
       box.append(div);
       const cells = []; Object.keys(TIPO).forEach(k => { for (let i = 0; i < n[k]; i++) cells.push(k); });
       const S = 22, G = 2, svg = d3.select(div).append('svg').attr('viewBox', `0 0 ${10 * S} ${10 * S}`).attr('role', 'img').attr('aria-label', `De cada 100 hogares en ${c}`);
@@ -100,7 +100,7 @@
         .on('pointermove', (e, k) => { showTT(e, `<div class="tt-sub">${c}</div><div class="tt-val">${pct(raw[k])}</div><div><span class="key" style="background:${css(TIPO[k].v)}"></span>${TIPO[k].label}</div><div class="body-s">≈ ${nf.format(Math.round(raw[k] * r.hogares))} hogares</div>`); d3.select(e.currentTarget).attr('opacity', .75); })
         .on('pointerleave', e => { hideTT(); d3.select(e.currentTarget).attr('opacity', 1); });
       const big = Object.entries(n).filter(([k]) => k !== 'coincide').sort((a, b) => b[1] - a[1])[0];
-      div.insertAdjacentHTML('beforeend', `<p class="body-m" style="margin-top:8px"><b>${n.coincide}</b> coinciden · <b>${100 - n.coincide}</b> divergen</p>`);
+      div.insertAdjacentHTML('beforeend', `<p class="body-m" style="margin-top:8px"><b>${n.coincide}</b> coinciden · <b>${100 - n.coincide}</b> discrepan</p>`);
       rows.push([c, pct(raw.coincide), pct(raw.falso_positivo), pct(raw.falso_negativo), pct(raw.base_desactualizada), nf.format(r.hogares)]);
     });
     table('t-waffle', ['Comuna', 'Coincide', 'Falso positivo', 'Falso negativo', 'Desactualizada', 'Hogares'], rows);
@@ -135,7 +135,7 @@
         .on('pointerleave', () => { hideTT(); hair.attr('opacity', 0); dot.attr('opacity', 0); });
       s.filter(d => d.mes % 6 === 0).forEach(d => rows.push([`${c} · mes ${d.mes}`, pct(d.divergencia), pct(d.falso_positivo), pct(d.falso_negativo), pct(d.mudados)]));
     });
-    table('t-serie', ['Comuna · mes', 'Divergencia', 'Prioriza sin elegibilidad', 'Elegible no priorizado', 'Mudados'], rows);
+    table('t-serie', ['Comuna · mes', 'Discrepancia', 'Prioriza sin elegibilidad', 'Elegible no priorizado', 'Mudados'], rows);
   }
 
   /* ── 04 dumbbell ── */
@@ -276,7 +276,7 @@
     dibujar('#c-viv-p', 'priorizados', Math.max(.7, d3.max(todos, d => d.priorizados)));
     dibujar('#c-viv-d', 'divergencia', Math.max(.4, d3.max(COMUNAS.flatMap(c => ['casa', 'departamento'].map(t => V[c][t]?.divergencia || 0)))));
     const NOM = { casa: 'Casa', departamento: 'Departamento', otra: 'Otra' };
-    table('t-viv', ['Comuna', 'Tipo', 'Hogares', 'Mezcla sintética', 'Censo 2024', 'Priorizados', 'Divergen', 'Falso positivo', 'Falso negativo', 'Desactualizada'],
+    table('t-viv', ['Comuna', 'Tipo', 'Hogares', 'Mezcla sintética', 'Censo 2024', 'Priorizados', 'Discrepan', 'Falso positivo', 'Falso negativo', 'Desactualizada'],
       COMUNAS.flatMap(c => Object.entries(V[c]).map(([t, f]) => [c, NOM[t], nf.format(f.hogares), pct(f.share_sintetico), pct(f.share_censo), pct(f.priorizados), pct(f.divergencia), pct(f.falso_positivo), pct(f.falso_negativo), pct(f.desactualizada)])));
     const s = V['Santiago'], p = V['Puente Alto'];
     $('#ins-viv').innerHTML = `Mismo criterio, resultados distintos: en Santiago el registro prioriza ${pct(s.casa.priorizados, 0)} de las casas y ${pct(s.departamento.priorizados, 0)} de los departamentos; en Puente Alto se invierte (${pct(p.casa.priorizados, 0)} y ${pct(p.departamento.priorizados, 0)}). La vivienda no entra a la regla, pero viaja con el ingreso.`;

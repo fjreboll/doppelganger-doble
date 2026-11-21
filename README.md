@@ -1,10 +1,23 @@
-# Santiago Gemelo Digital · Registro público de divergencias (Doppelgänger A)
+# Santiago Gemelo Digital · Registro público de discrepancias (Doppelgänger A)
 
 **Sitio:** https://fjreboll.github.io/doppelganger-doble/ · **Par:** [Beholder · Grafo del encargo SITIA (C)](https://fjreboll.github.io/doppelganger-encargo/)
 
 Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (Doctorado en Arquitectura, Diseño y Estudios Urbanos UC). Un gemelo sintético de 559.440 hogares de cuatro comunas de Santiago (La Pintana, Puente Alto, Santiago, Las Condes), construido con CASEN 2022 recalibrada a los márgenes comunales del Censo 2024, sobre el cual un registro administrativo prioriza una prestación durante 24 meses simulados. Cada decisión lleva costura obligatoria (confianza, antigüedad del dato, umbral, procedencia) y cada discrepancia con la vida situada entra al registro con seis campos.
 
 > Todos los hogares son **casos compuestos**. La regla de decisión es un **análogo**, no el algoritmo de Calificación Socioeconómica del Registro Social de Hogares.
+
+Prueba de concepto de la tesis doctoral *Discrepancias y opacidades algorítmicas: problematizar desde el diseño los modelos de inteligencia artificial con que el Estado clasifica poblaciones en Argentina y Chile* (Francisco Javier Rebolledo Caro, Doctorado en Arquitectura, Diseño y Estudios Urbanos UC; profesor guía: Martín Tironi).
+
+## Vocabulario
+
+Desde la versión de candidatura de la tesis (21-11-2026) los sitios usan cuatro términos con sentido preciso:
+
+- **Discrepancia**: falta de coincidencia observable entre lo que el sistema afirma de una situación y esa situación tal como la conocen otras prácticas (registro, encuesta, experiencia de los clasificados). Es la unidad del registro.
+- **Divergencia**: la representación operativa del sistema que no coincide con la situación que dice describir. Se instaura en el **molde**: qué se registra, con qué fuente, con qué vigencia, bajo qué regla y con qué corte.
+- **Opacidad**: imposibilidad, para quien resulta clasificado o para un tercero, de reconstruir la relación entre una decisión y la representación que la funda.
+- **Contraexperimentación**: construir dispositivos con las reglas, datos y documentos que el sistema declara para exhibir la divergencia que la decisión oculta.
+
+Las claves de datos (`divergencia`, `divergencias`) se mantienen para no romper el pipeline; los textos de la interfaz usan *discrepancia* para el caso observable y *divergencia* para su origen en el molde.
 
 ## Estructura
 
@@ -18,6 +31,10 @@ Dashboard infográfico de la prueba de concepto A del programa *Doppelganger* (D
 | `data.json` | Datos exportados desde la base común `doppelganger.db` |
 | `assets/` | Hoja de estilo M3, D3 v7 y tipografías auto-alojadas (Roboto Flex, Roboto Mono, Material Symbols) |
 | `pipeline/` | Código reproducible: ingesta, calibración, simulación, grafo, validación y exportación |
+
+## Vecindario (dispositivo de deliberación)
+
+`vecindario/` es una maqueta exploratoria: 28 hogares sintéticos de la muestra del sitio, elegidos para reflejar la proporción de comuna y tenencia, cuyos integrantes pueden inspeccionarse junto al registro de su hogar. En la tesis corresponde al dispositivo de deliberación, que entregará la regla a quienes resultan clasificados. Su protocolo está en elaboración y se someterá a revisión ética regular; no se han realizado sesiones con personas.
 
 ## Reproducir
 

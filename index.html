@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Doppelgänger · Santiago Gemelo Digital</title>
-<meta name="description" content="Gemelo sintético de cuatro comunas de Santiago: cada decisión lleva costura y cada divergencia queda registrada.">
+<meta name="description" content="Gemelo sintético de cuatro comunas de Santiago: cada decisión lleva costura y cada discrepancia queda registrada.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23415f91'/><circle cx='12' cy='16' r='6' fill='none' stroke='white' stroke-width='2.5'/><circle cx='20' cy='16' r='6' fill='none' stroke='%23d6e3ff' stroke-width='2.5' stroke-dasharray='3 2'/></svg>">
 <link rel="stylesheet" href="assets/m3.css?v=20260922">
 <script src="iconos.js?v=20260922" defer></script>
@@ -241,7 +241,7 @@ section:first-of-type .viz-band{margin-top:24px}
   </nav>
   <a class="icon-btn" href="https://github.com/fjreboll/doppelganger-doble" aria-label="Código en GitHub"><span class="material-symbols-outlined">code</span></a>
   <div class="menu-panel" id="menu-panel">
-    <a href="https://fjreboll.github.io/doppelganger-doble/" aria-current="page"><span class="material-symbols-outlined">difference</span><span>A · Santiago Gemelo Digital</span><small>Registro de divergencias · 559.440 hogares sintéticos</small></a>
+    <a href="https://fjreboll.github.io/doppelganger-doble/" aria-current="page"><span class="material-symbols-outlined">difference</span><span>A · Santiago Gemelo Digital</span><small>Registro de discrepancias · 559.440 hogares sintéticos</small></a>
     <a href="vecindario/"><span class="material-symbols-outlined">group</span><span>Vecindario</span><small>28 hogares inspeccionables, integrante por integrante</small></a>
     <a href="ficha/"><span class="material-symbols-outlined">scatter_plot</span><span>Población sintética</span><small>Ficha: 10 ciudadanos sintéticos ante los registros que abre un RUT</small></a>
     <a href="https://fjreboll.github.io/doppelganger-encargo/"><span class="material-symbols-outlined">hub</span><span>C · Beholder</span><small>Grafo del encargo SITIA · actores, vínculos y ausencias</small></a>
@@ -267,7 +267,7 @@ section:first-of-type .viz-band{margin-top:24px}
     <div class="px-copy">
       <h2 class="px-title px-title-long" id="px-title"><span>Santiago</span> <span>Gemelo Digital</span></h2>
       <p class="px-sub">Lo que el registro ve y lo que la vida hace, hogar por hogar.</p>
-      <div class="px-counter" aria-live="off"><span class="px-mes">MES 00</span><span><span class="px-total">0</span> hogares divergen</span></div>
+      <div class="px-counter" aria-live="off"><span class="px-mes">MES 00</span><span><span class="px-total">0</span> hogares discrepan</span></div>
       <div class="px-bar" aria-hidden="true"><i></i></div>
       <ul class="px-legend">
         <li><i style="background:#d95926"></i>Priorizado sin serlo</li>
@@ -283,12 +283,13 @@ section:first-of-type .viz-band{margin-top:24px}
 
 <div class="wrap hero">
   <h1 class="display-m">Cuando el registro decide, la vida diverge.</h1>
-  <p class="body-l muted">559.440 hogares sintéticos. Cada decisión muestra su <b>costura</b>; cada discrepancia con la vida entra al <b>registro de divergencias</b>.</p>
+  <p class="body-l muted">559.440 hogares sintéticos. Cada decisión muestra su <b>costura</b>; cada discrepancia con la vida entra al <b>registro de discrepancias</b>.</p>
   <div class="chip-set" style="margin-top:20px">
     <span class="chip assist"><span class="material-symbols-outlined">science</span>Hogares sintéticos</span>
     <span class="chip assist"><span class="material-symbols-outlined">rule</span>Regla análoga al RSH</span>
     <span class="chip assist"><span class="material-symbols-outlined">calendar_month</span>24 meses simulados</span>
   </div>
+  <div class="notice" style="margin-top:20px;display:flex;gap:12px;align-items:flex-start"><span class="material-symbols-outlined">menu_book</span><p class="body-m"><b>Vocabulario.</b> Una <b>discrepancia</b> es la falta de coincidencia observable entre lo que el registro afirma de un hogar y lo que otra práctica conoce de él. La <b>divergencia</b> es su origen: las decisiones del <b>molde</b> (qué fuente, con qué vigencia, bajo qué regla y con qué corte). La <b>opacidad</b> es la imposibilidad de reconstruir esa relación desde fuera. Este sitio es un <b>contraexperimento</b>: usa la regla y las fuentes que el sistema declara para exhibir la divergencia que su decisión oculta.</p></div>
 </div>
 
 <div class="wrap"><div class="grid g-4" id="stats" style="margin:24px 0 16px"></div></div>
@@ -322,7 +323,7 @@ section:first-of-type .viz-band{margin-top:24px}
         <div class="fx-rule sit"><b>Vida situada</b>
           <code>(todos los ingresos del mes, también informales) ÷ personas reales<sup>0,7</sup></code>
           <span>→ bajo p40 <b>y</b> sigue viviendo en la comuna: <b>elegible</b></span></div>
-        <div class="fx-rule out"><b>Si no coinciden</b><span>entra al registro de divergencias con sus seis campos</span></div>
+        <div class="fx-rule out"><b>Si no coinciden</b><span>entra al registro de discrepancias con sus seis campos</span></div>
       </div>
     </div>
   </div>
@@ -332,7 +333,7 @@ section:first-of-type .viz-band{margin-top:24px}
     <div class="legend"><span><span class="dot" style="background:var(--md-on-surface)"></span>Casa</span><span><span class="sq"></span>Departamento</span></div>
     <div class="minis viv">
       <div><h4 class="title-s">Priorizados por el registro</h4><svg class="chart-svg" id="c-viv-p" role="img" aria-label="Porcentaje de hogares priorizados por tipo de vivienda y comuna"></svg></div>
-      <div><h4 class="title-s">Divergen de la vida situada</h4><svg class="chart-svg" id="c-viv-d" role="img" aria-label="Porcentaje de hogares con divergencia por tipo de vivienda y comuna"></svg></div>
+      <div><h4 class="title-s">Discrepan de la vida situada</h4><svg class="chart-svg" id="c-viv-d" role="img" aria-label="Porcentaje de hogares con discrepancia por tipo de vivienda y comuna"></svg></div>
     </div>
     <div class="tablewrap scroll-x" id="t-viv"></div>
     <div class="insight"><span class="material-symbols-outlined">lightbulb</span><p class="body-m" id="ins-viv"></p></div>
@@ -360,7 +361,7 @@ section:first-of-type .viz-band{margin-top:24px}
 <section class="wrap" id="cien" data-n="03" data-corto="Magnitud">
   <div class="sec-head"><div><h2 class="headline-s">De cada 100 hogares, al mes 24</h2></div></div>
   <div class="card chart-card">
-    <header><div><h3 class="title-m">Coinciden o divergen</h3><p class="body-m muted">Un cuadro = un hogar.</p></div>
+    <header><div><h3 class="title-m">Coinciden o discrepan</h3><p class="body-m muted">Un cuadro = un hogar.</p></div>
     <button class="btn text" data-table="t-waffle"><span class="material-symbols-outlined">table</span>Tabla</button></header>
     <div class="legend" id="lg-waffle"></div>
     <div class="waffles" id="c-waffle"></div>
@@ -371,7 +372,7 @@ section:first-of-type .viz-band{margin-top:24px}
 <section class="wrap" id="tiempo" data-n="04" data-corto="Divergencia sin escena">
   <div class="sec-head"><div><h2 class="headline-s">La brecha crece en silencio</h2></div></div>
   <div class="card chart-card">
-    <header><div><h3 class="title-m">Hogares con divergencia, mes a mes</h3><p class="body-m muted">El registro se entera tarde; a veces, no se entera.</p></div>
+    <header><div><h3 class="title-m">Hogares con discrepancia, mes a mes</h3><p class="body-m muted">El registro se entera tarde; a veces, no se entera.</p></div>
     <button class="btn text" data-table="t-serie"><span class="material-symbols-outlined">table</span>Tabla</button></header>
     <div class="minis" id="c-serie"></div>
     <div class="tablewrap scroll-x" id="t-serie"></div>
@@ -429,7 +430,7 @@ section:first-of-type .viz-band{margin-top:24px}
 </main>
 
 <footer><div class="wrap grid g-3">
-  <div><p class="title-m">Doppelganger · POC v0.1</p><p class="body-m muted">Diseño crítico sobre divergencia algorítmica. Doctorado FADEU UC.</p></div>
+  <div><p class="title-m">Doppelganger · POC v0.1</p><p class="body-m muted">Contraexperimentos sobre discrepancias y opacidades algorítmicas. Doctorado FADEU UC.</p></div>
   <div><p class="title-s">Ética</p><p class="body-m muted">Todo hogar es sintético. Ningún dato personal real entra ni sale.</p></div>
   <div><p class="title-s">Enlaces</p><p class="body-m"><a href="https://fjreboll.github.io/doppelganger-encargo/">C · Beholder</a><br><a href="vecindario/">Vecindario · 28 hogares inspeccionables</a><br><a href="ficha/">Población sintética · ficha ante los registros del RUT</a><br><a href="https://github.com/fjreboll/doppelganger-doble">Código y datos del sitio</a></p><p class="body-s muted" id="gen"></p></div>
 </div></footer>

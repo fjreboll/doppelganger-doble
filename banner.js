@@ -117,12 +117,12 @@
       f.forEach((fila, dy) => [...fila].forEach((ch, dx) => { if (ch === '.') return; set((sp.y0 + dy) * cols + sp.x0 + dx, ch === 'R' ? estado : ch === 'W' ? RGB.muro : RGB.ventana); }));
     }
     ctx.putImageData(img, 0, 0);
-    root.querySelectorAll('.px-label').forEach(l => { const s = serie[l.dataset.comuna][mes]; l.querySelector('.v').textContent = `${pct(s.divergencia)} diverge`; });
+    root.querySelectorAll('.px-label').forEach(l => { const s = serie[l.dataset.comuna][mes]; l.querySelector('.v').textContent = `${pct(s.divergencia)} discrepa`; });
     $('.px-mes').textContent = 'MES ' + String(mes).padStart(2, '0');
     $('.px-bar i').style.width = (mes / 24 * 100) + '%';
     const tot = G.comunas.filter(c => c.piloto).reduce((a, c) => { const r = resumen[c.nombre], s = serie[c.nombre][mes]; a.h += r.hogares; a.d += r.hogares * s.divergencia; return a; }, { h: 0, d: 0 });
     $('.px-total').textContent = nf.format(Math.round(tot.d));
-    cv.setAttribute('aria-label', `Mapa pixelado de la Región Metropolitana con las cuatro comunas del gemelo sintético. Mes ${mes} de 24: ${nf.format(Math.round(tot.d))} de ${nf.format(tot.h)} hogares con divergencia entre registro y vida situada.`);
+    cv.setAttribute('aria-label', `Mapa pixelado de la Región Metropolitana con las cuatro comunas del gemelo sintético. Mes ${mes} de 24: ${nf.format(Math.round(tot.d))} de ${nf.format(tot.h)} hogares con discrepancia entre registro y vida situada.`);
   }
 
   let visible = true;
@@ -161,7 +161,7 @@
     if (!c) { tt.classList.remove('on'); return; }
     let html = `<div class="tt-sub">${c.nombre}</div>`;
     if (c.piloto) { const s = serie[c.nombre][mes], r = resumen[c.nombre];
-      html += `<div class="tt-val">${(100 * s.divergencia).toLocaleString('es-CL', { maximumFractionDigits: 1 })}%</div><div>diverge · mes ${mes}</div><hr class="divider" style="margin:8px 0"><div class="row"><span><span class="key" style="background:${C.fp}"></span>Priorizado sin serlo</span><b>${pct(s.falso_positivo)}</b></div><div class="row"><span><span class="key" style="background:${C.fn}"></span>Excluido siendo elegible</span><b>${pct(s.falso_negativo)}</b></div><div class="body-s" style="margin-top:6px">${nf.format(r.hogares)} hogares · RSH tramo 40%: ${pct(((D.contexto || {})[c.nombre] || {}).rsh?.['0-40'] ?? NaN)} · ${pct(((D.contexto || {})[c.nombre] || {}).vivienda?.departamento ?? NaN)} deptos.</div>`;
+      html += `<div class="tt-val">${(100 * s.divergencia).toLocaleString('es-CL', { maximumFractionDigits: 1 })}%</div><div>discrepa · mes ${mes}</div><hr class="divider" style="margin:8px 0"><div class="row"><span><span class="key" style="background:${C.fp}"></span>Priorizado sin serlo</span><b>${pct(s.falso_positivo)}</b></div><div class="row"><span><span class="key" style="background:${C.fn}"></span>Excluido siendo elegible</span><b>${pct(s.falso_negativo)}</b></div><div class="body-s" style="margin-top:6px">${nf.format(r.hogares)} hogares · RSH tramo 40%: ${pct(((D.contexto || {})[c.nombre] || {}).rsh?.['0-40'] ?? NaN)} · ${pct(((D.contexto || {})[c.nombre] || {}).vivienda?.departamento ?? NaN)} deptos.</div>`;
       html += `<div class="body-s" style="margin-top:4px;color:var(--md-primary)">Clic: filtrar el tablero por ${c.nombre}</div>`;
     } else html += `<div class="body-s">Fuera de la muestra</div>`;
     cv.style.cursor = c.piloto ? 'pointer' : 'crosshair';
